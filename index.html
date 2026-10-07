@@ -186,7 +186,7 @@ button{cursor:pointer}
 .tbl-meta{margin-left:auto;display:flex;gap:6px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .mini{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px}
 .mini.m1{background:var(--g1-soft);color:var(--g1)} .mini.m0{background:var(--g0-soft);color:var(--g0)}
-.tbl-tools{display:flex;gap:6px;margin-left:auto}
+.tbl-tools{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
 .grp{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px;padding-block:8px;border-top:1.5px dashed var(--line)}
 .grp-l{font-family:var(--f-mark);font-size:22px;line-height:1;color:var(--muted);text-align:center;padding-top:4px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--tile),1fr));gap:8px}
@@ -1191,7 +1191,7 @@ function renderBoard() {
       return `<div class="grp"><div class="grp-l">${esc(g.id)}${del}</div><div class="tiles">${tiles}${add}</div></div>`;
     }).join('');
     const tools = S.editing
-      ? `<div class="tbl-tools"><button type="button" class="btn small" data-addgroup="${esc(t.id)}">+ Group</button>${t.groups.every(g => !g.students.length) ? `<button type="button" class="btn small danger" data-deltable="${esc(t.id)}">Remove</button>` : ''}</div>`
+      ? `<div class="tbl-tools"><button type="button" class="btn small" data-renametable="${esc(t.id)}">Number…</button><button type="button" class="btn small" data-addgroup="${esc(t.id)}">+ Group</button>${t.groups.every(g => !g.students.length) ? `<button type="button" class="btn small danger" data-deltable="${esc(t.id)}">Remove</button>` : ''}</div>`
       : `<div class="tbl-meta">${tableMetaHTML(t)}</div>`;
     return `<section class="tbl" data-table="${esc(t.id)}"><header class="tbl-h"><h2 class="tbl-n">Table <b>${esc(t.id)}</b></h2>${tools}</header>${groups || '<p class="hint" style="padding:8px 0">No groups yet.</p>'}</section>`;
   }).join('') + (S.editing ? `<button type="button" class="add-tile add-table" data-act="addtable"><b>+</b>Add a table</button>` : '');
@@ -1215,7 +1215,7 @@ function renderModeBar() {
     const label = S.armed.startsWith('G') ? GRADE_LABEL[S.armed] : KW[S.armed].short;
     html = `<div class="bar"><span class="chip ${chip ? esc(chip.className.replace(/\b(armed|lifted)\b/g, '')) : ''}">${esc(label)}</span><p>Tap students to stamp. Tap again to remove.</p><button class="btn small" type="button" data-act="disarm">Done</button></div>`;
   } else if (S.editing) {
-    html = `<div class="bar"><p>Editing tables: add students with +, tap a student to rename, move or remove.</p><button class="btn small" type="button" data-act="doneedit">Done</button></div>`;
+    html = `<div class="bar"><p>Editing tables: Number… renumbers a table, + adds students, tap a student to rename, move or remove.</p><button class="btn small" type="button" data-act="doneedit">Done</button></div>`;
   }
   if (host.innerHTML !== html) host.innerHTML = html;
 }
@@ -1400,6 +1400,8 @@ document.addEventListener('click', e => {
   }
   const add = t.closest('[data-add]');
   if (add) { const [tb, gr] = add.dataset.add.split('|'); openAdd(tb, gr); return; }
+  const rt = t.closest('[data-renametable]');
+  if (rt) { openRenameTable(rt.dataset.renametable); return; }
   const ag = t.closest('[data-addgroup]');
   if (ag) { addGroup(ag.dataset.addgroup); return; }
   const dg = t.closest('[data-delgroup]');
@@ -1432,10 +1434,59 @@ function starterLayout() {
 }
 function addTable() {
   const L = currentLayout();
-  const nums = L.tables.map(t => parseInt(t.id, 10)).filter(n => !isNaN(n));
-  const id = String((nums.length ? Math.max(...nums) : 0) + 1);
-  L.tables.push({id, groups:[...GROUPS_DEFAULT]});
+  const used = new Set(L.tables.map(t => String(t.id)));
+  let n = 1;
+  while (used.has(String(n))) n++;
+  L.tables.push({id:String(n), groups:[...GROUPS_DEFAULT]});
+  L.tables.sort((a, b) => natural(a.id, b.id));
   saveLayout(L); renderAll();
+}
+/* Renumber a table. Its students move with it; if the new number is taken, the two tables swap. */
+function renameTable(oldId, newId) {
+  newId = String(newId).trim();
+  if (!newId || newId === oldId) return;
+  const L = currentLayout();
+  const a = L.tables.find(t => t.id === oldId);
+  const b = L.tables.find(t => t.id === newId);
+  for (const [sid, st] of [...S.students]) {
+    const t = String(st.table || '');
+    if (t === oldId) putStudent(sid, {...st, table:newId});
+    else if (b && t === newId) putStudent(sid, {...st, table:oldId});
+  }
+  if (a) a.id = newId;
+  if (b) b.id = oldId;
+  L.tables.sort((x, y) => natural(x.id, y.id));
+  saveLayout(L);
+  S.lastStruct = '';
+  renderAll();
+}
+function openRenameTable(id) {
+  openSheet('rentable', `
+    <h2>Table ${esc(id)}</h2>
+    <label class="fv"><span>Table number</span><input id="rtVal" value="${esc(id)}" autocomplete="off" maxlength="12" enterkeyhint="done"></label>
+    <p class="hint" id="rtHint">Students at this table move with it. Grades are not affected.</p>
+    <div class="sh-foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="rtGo">Save</button></div>`);
+  const inp = $('#rtVal');
+  let confirmSwap = null;
+  inp.addEventListener('input', () => { confirmSwap = null; $('#rtGo').textContent = 'Save'; $('#rtHint').textContent = 'Students at this table move with it. Grades are not affected.'; });
+  const go = () => {
+    const v = inp.value.replace(/\|/g, '').trim();
+    if (!v) { inp.focus(); return; }
+    if (v === id) { closeSheet(); return; }
+    const taken = currentLayout().tables.some(t => t.id === v);
+    if (taken && confirmSwap !== v) {
+      confirmSwap = v;
+      $('#rtHint').innerHTML = `Table ${esc(v)} already exists. Tap again to <b>swap</b> the numbers of Table ${esc(id)} and Table ${esc(v)}; each table keeps its students.`;
+      $('#rtGo').textContent = `Swap with Table ${v}`;
+      return;
+    }
+    renameTable(id, v);
+    closeSheet();
+    toast(taken ? `Tables ${id} and ${v} swapped numbers` : `Table ${id} is now Table ${v}`);
+  };
+  $('#rtGo').addEventListener('click', go);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+  setTimeout(() => { inp.focus(); inp.select(); }, 50);
 }
 function addGroup(tid) {
   const L = currentLayout();
