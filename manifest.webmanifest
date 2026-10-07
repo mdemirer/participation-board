@@ -1,7 +1,6 @@
 {
   "name": "Participation Board",
   "short_name": "Participation",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
