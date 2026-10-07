@@ -1,0 +1,2658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Participation Board</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Participation">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#E8EDF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E141A" media="(prefers-color-scheme: dark)">
+<style>
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(fonts/atkinson-hyperlegible-latin-ext-400-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(fonts/atkinson-hyperlegible-latin-ext-700-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Kalam';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(fonts/kalam-latin-ext-700-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Kalam';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(fonts/kalam-latin-700-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+/* Layout: the classroom from above. Each table is a card of student photo tiles;
+   the rubric "markers" dock at the right on wide screens and along the bottom on phones. */
+:root{
+  --bg:#E8EDF1; --surface:#FFFFFF; --surface-2:#F2F5F8; --ink:#15202B; --muted:#586674; --line:#D2DAE1;
+  --accent:#1B4FD8; --accent-ink:#FFFFFF; --accent-soft:#DCE5FF;
+  --g2:#17784A; --g2-soft:#DCF0E4;
+  --g1:#7A5200; --g1-soft:#FFF1C2; --g1-fill:#FFD338; --g1-on:#3A2800; --g1-line:#E0B41E;
+  --g0:#B3261E; --g0-soft:#FCE0DB; --g0-fill:#E5483A; --g0-on:#FFFFFF; --g0-line:#D0473A;
+  --ph-s:38%; --ph-l:82%; --ph-ink:28%;
+  --scrim:rgba(12,18,24,.42);
+  --shadow:0 1px 2px rgba(21,32,43,.06), 0 6px 18px rgba(21,32,43,.07);
+  --shadow-lift:0 12px 32px rgba(21,32,43,.24);
+  --f-ui:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mark:"Kalam", "Segoe Print", "Bradley Hand", "Chalkboard SE", cursive;
+  --tray-h:0px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E141A; --surface:#172029; --surface-2:#1E2934; --ink:#E4EBF2; --muted:#97A5B3; --line:#2B3844;
+    --accent:#8AA8FF; --accent-ink:#0E141A; --accent-soft:#1F2C4D;
+    --g2:#6FD39A; --g2-soft:#15321F;
+    --g1:#F4CD5A; --g1-soft:#3A2F0B; --g1-fill:#F2C636; --g1-on:#2B1E00; --g1-line:#9C7A12;
+    --g0:#FF8A7D; --g0-soft:#43201B; --g0-fill:#E5534A; --g0-on:#FFFFFF; --g0-line:#A8433A;
+    --ph-s:24%; --ph-l:30%; --ph-ink:84%;
+    --scrim:rgba(0,0,0,.6);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    --shadow-lift:0 12px 32px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E141A; --surface:#172029; --surface-2:#1E2934; --ink:#E4EBF2; --muted:#97A5B3; --line:#2B3844;
+  --accent:#8AA8FF; --accent-ink:#0E141A; --accent-soft:#1F2C4D;
+  --g2:#6FD39A; --g2-soft:#15321F;
+  --g1:#F4CD5A; --g1-soft:#3A2F0B; --g1-fill:#F2C636; --g1-on:#2B1E00; --g1-line:#9C7A12;
+  --g0:#FF8A7D; --g0-soft:#43201B; --g0-fill:#E5534A; --g0-on:#FFFFFF; --g0-line:#A8433A;
+  --ph-s:24%; --ph-l:30%; --ph-ink:84%;
+  --scrim:rgba(0,0,0,.6);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  --shadow-lift:0 12px 32px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.app{padding-inline:16px;padding-block:12px calc(var(--tray-h) + 28px);max-width:1640px;margin:0 auto;--tile:100px}
+.app[data-size="s"]{--tile:80px}
+.app[data-size="l"]{--tile:128px}
+@media (max-width:599px){
+  .app{--tile:88px}
+  .app[data-size="s"]{--tile:70px}
+  .app[data-size="l"]{--tile:136px}
+}
+
+/* ---------- header ---------- */
+.top{display:flex;flex-direction:column;gap:10px;padding-block:4px 14px}
+.row1,.row2{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}
+.row1{justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.course{font-family:var(--f-mark);font-size:28px;line-height:1;color:var(--accent);letter-spacing:.01em}
+.subtitle{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.quiet{background:transparent}
+.btn.danger{color:var(--g0);border-color:var(--g0-line);background:transparent}
+.btn.small{min-height:36px;padding:6px 10px;font-size:13px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{width:18px;height:18px;flex:none}
+.file{position:relative;overflow:hidden}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.icon{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-size:22px;line-height:1;font-weight:700}
+.week{display:flex;align-items:center;gap:6px}
+.week select{height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);padding:0 10px;font-weight:700;font-size:15px;min-width:132px}
+.field{display:flex;align-items:center;gap:8px;height:44px;padding:0 4px 0 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);min-width:0;flex:1 1 150px;max-width:260px}
+.field span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field input{border:0;background:transparent;min-width:0;flex:1;height:100%;outline:none;font-size:15px}
+.field:focus-within{border-color:var(--accent)}
+.tally{display:flex;gap:6px;align-items:center;font-variant-numeric:tabular-nums}
+.pill{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:999px;font-weight:700;font-size:13px;background:var(--surface);border:1px solid var(--line)}
+.pill i{width:10px;height:10px;border-radius:50%;display:block}
+.pill.p2 i{background:var(--g2)} .pill.p1 i{background:var(--g1-fill)} .pill.p0 i{background:var(--g0-fill)}
+.save{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-left:auto}
+.save i{width:8px;height:8px;border-radius:50%;background:var(--g2);display:block}
+.save[data-s="busy"] i{background:var(--g1-fill)}
+.save[data-s="err"] i{background:var(--g0-fill)}
+.save[data-s="local"] i{background:var(--muted)}
+.sizes{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;height:44px;background:var(--surface)}
+.sizes button{border:0;background:transparent;width:40px;font-weight:700;font-size:13px;color:var(--muted)}
+.sizes button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- banners ---------- */
+.banner{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border-radius:14px;background:var(--accent-soft);margin-bottom:14px;font-size:14px}
+.banner p{margin:0;flex:1 1 260px;min-width:0}
+#modeBar{position:sticky;top:env(safe-area-inset-top,0px);z-index:15}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:14px;background:var(--ink);color:var(--bg);margin-bottom:14px;box-shadow:var(--shadow-lift)}
+.bar p{margin:0;flex:1 1 200px;font-weight:700;font-size:14px;min-width:0}
+.bar .btn{background:var(--bg);color:var(--ink);border-color:var(--bg);min-height:38px}
+.bar .chip{pointer-events:none;min-height:34px;padding:4px 10px}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr) 300px;align-items:start}
+}
+
+/* ---------- board ---------- */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--tile)*3 + 90px)),1fr));gap:16px;align-items:start}
+.tbl{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:10px 12px 6px;min-width:0}
+.tbl-h{display:flex;align-items:center;gap:10px;padding:2px 2px 6px}
+.tbl-n{margin:0;display:flex;align-items:baseline;gap:6px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tbl-n b{font-family:var(--f-mark);font-size:30px;line-height:1;color:var(--ink);letter-spacing:0;text-transform:none}
+.tbl-meta{margin-left:auto;display:flex;gap:6px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.mini{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px}
+.mini.m1{background:var(--g1-soft);color:var(--g1)} .mini.m0{background:var(--g0-soft);color:var(--g0)}
+.tbl-tools{display:flex;gap:6px;margin-left:auto}
+.grp{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px;padding-block:8px;border-top:1.5px dashed var(--line)}
+.grp-l{font-family:var(--f-mark);font-size:22px;line-height:1;color:var(--muted);text-align:center;padding-top:4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--tile),1fr));gap:8px}
+.tile{position:relative;display:flex;flex-direction:column;gap:5px;padding:5px 5px 7px;border-radius:13px;border:2px solid transparent;background:var(--surface-2);text-align:left;min-width:0;transition:transform .12s ease, box-shadow .12s ease;touch-action:manipulation}
+.tile > *{pointer-events:none}
+.tile[data-g="1"]{background:var(--g1-soft);border-color:var(--g1-line)}
+.tile[data-g="0"]{background:var(--g0-soft);border-color:var(--g0-line)}
+.tile.hot{transform:scale(1.05);box-shadow:0 0 0 3px var(--accent), var(--shadow-lift);z-index:2}
+.tile.flash{animation:flash .5s ease}
+@keyframes flash{0%{transform:scale(1.08)}100%{transform:scale(1)}}
+.ph{position:relative;display:grid;place-items:center;aspect-ratio:1;max-width:100%;border-radius:9px;overflow:hidden;background:hsl(var(--hue,210) var(--ph-s) var(--ph-l));color:hsl(var(--hue,210) 45% var(--ph-ink));font-weight:700;font-size:calc(var(--tile) * .3);letter-spacing:.02em}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;top:9px;right:9px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--g2);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.tile[data-g="1"] .badge{background:var(--g1-fill);color:var(--g1-on)}
+.tile[data-g="0"] .badge{background:var(--g0-fill);color:var(--g0-on)}
+.note-dot{position:absolute;top:9px;left:9px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--muted);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.note-dot svg{width:13px;height:13px}
+.nm{font-weight:700;font-size:13px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;padding-inline:2px}
+.why{font-size:11.5px;line-height:1.2;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:2px}
+.tile[data-g="1"] .why{color:var(--g1)} .tile[data-g="0"] .why{color:var(--g0)} .tile[data-g="2"] .why{color:var(--muted)}
+.add-tile{display:grid;place-items:center;align-content:center;gap:4px;min-height:calc(var(--tile) + 30px);border-radius:13px;border:2px dashed var(--line);background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:6px}
+.add-tile b{font-size:26px;line-height:1}
+.add-table{min-height:160px;border-radius:18px}
+.state{grid-column:1/-1;background:var(--surface);border-radius:18px;padding:28px 22px;box-shadow:var(--shadow);max-width:640px}
+.state h2{margin:0 0 6px;font-size:22px;text-wrap:balance}
+.state p{margin:0 0 16px;color:var(--muted);max-width:60ch}
+.state .btns{display:flex;gap:10px;flex-wrap:wrap}
+.loading{grid-column:1/-1;color:var(--muted);padding:40px 4px;font-weight:700}
+
+/* ---------- rubric markers ---------- */
+.rubric{background:var(--surface);box-shadow:var(--shadow);z-index:20}
+.rb-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rb-title{margin:0;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rb-hint{margin:0;font-size:13px;color:var(--muted);flex:1 1 160px;min-width:0}
+.rb-sec h3{margin:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.rb-sec[data-lvl="1"] h3{color:var(--g1)} .rb-sec[data-lvl="0"] h3{color:var(--g0)}
+.chips{display:flex;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 13px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;line-height:1.25;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;white-space:nowrap;flex:none;text-align:left;touch-action:pan-x}
+.chip .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.chip.y{background:var(--g1-soft);border-color:var(--g1-line)} .chip.y .dot{background:var(--g1-fill)}
+.chip.r{background:var(--g0-soft);border-color:var(--g0-line)} .chip.r .dot{background:var(--g0-fill)}
+.chip.G1{background:var(--g1-fill);border-color:var(--g1-fill);color:var(--g1-on)}
+.chip.G0{background:var(--g0-fill);border-color:var(--g0-fill);color:var(--g0-on)}
+.chip.G2{background:var(--g2-soft);border-color:var(--g2);color:var(--g2)}
+.chip.armed{box-shadow:0 0 0 3px var(--accent);border-color:var(--accent)}
+.chip.lifted{opacity:.4}
+.rubric.ro .chip{opacity:.45;cursor:not-allowed}
+.lbl-f{display:none}
+.ghost{position:fixed;left:0;top:0;z-index:90;pointer-events:none;box-shadow:var(--shadow-lift);transform-origin:center;max-width:280px;white-space:normal}
+.rb-ref{font-size:13px;color:var(--muted)}
+.rb-ref summary{cursor:pointer;font-weight:700;color:var(--ink);min-height:36px;display:flex;align-items:center}
+.rb-ref p{margin:6px 0}
+.rb-ref b{color:var(--ink)}
+
+@media (min-width:900px){
+  .rubric{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100dvh - 24px);overflow:auto;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain}
+  .rb-top{flex-direction:column;align-items:stretch;gap:8px}
+  .rb-hint{flex:none}
+  .rb-body{display:flex;flex-direction:column;gap:16px}
+  .rb-sec{display:flex;flex-direction:column;gap:8px}
+  .chips{flex-direction:column}
+  .chip{white-space:normal;width:100%;touch-action:pan-y}
+  .chip.y,.chip.r{font-weight:400;font-size:14px}
+  .chip .lbl-s{display:none} .chip .lbl-f{display:inline}
+  #trayToggle{display:none}
+}
+@media (max-width:899px){
+  .rubric{position:fixed;left:0;right:0;bottom:0;padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.14)}
+  .rb-top{padding-inline:16px}
+  .rb-title,.rb-ref,.rb-sec h3{display:none}
+  .rb-body{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+  .chips{overflow-x:auto;padding:2px 16px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .rubric.collapsed .rb-body{display:none}
+  #trayToggle{width:38px;height:38px;font-size:18px}
+  .rubric.collapsed #trayToggle{transform:rotate(180deg)}
+}
+
+/* ---------- sheets ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:60;display:grid;align-items:end;justify-items:center}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.sheet{position:relative;width:min(100%,640px);max-height:92dvh;overflow:auto;overscroll-behavior:contain;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow-lift);display:flex;flex-direction:column;gap:16px}
+@media (min-width:700px){.sheet-wrap{align-items:center}.sheet{border-radius:20px;padding:22px 24px}}
+.sheet h2{margin:0;font-size:21px;text-wrap:balance}
+.sheet h3{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sheet p{margin:0}
+.hint{font-size:13px;color:var(--muted)}
+.sh-x{position:absolute;top:10px;right:10px}
+.sheet > :first-child{padding-right:48px}
+.board.editing .grp{grid-template-columns:40px minmax(0,1fr)}
+.grp-l .btn{margin-top:6px;min-width:36px;padding:4px}
+.sh-head{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.sh-photo{display:flex;flex-direction:column;gap:8px;width:128px;flex:none}
+.sh-photo .ph{--tile:128px;border-radius:14px}
+.sh-id{flex:1 1 220px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.fv{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fv > span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fv input,.fv select,.fv textarea{min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface-2);padding:9px 12px;font-size:15px;width:100%}
+.fv textarea{resize:vertical;min-height:84px;line-height:1.4}
+.fv input:focus,.fv select:focus,.fv textarea:focus{outline:none;border-color:var(--accent)}
+.seat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border-radius:14px;border:2px solid var(--line);background:var(--surface-2);font-weight:700;font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.seg button small{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.seg button[data-g="2"][aria-pressed="true"]{background:var(--g2-soft);border-color:var(--g2);color:var(--g2)}
+.seg button[data-g="1"][aria-pressed="true"]{background:var(--g1-fill);border-color:var(--g1-fill);color:var(--g1-on)}
+.seg button[data-g="0"][aria-pressed="true"]{background:var(--g0-fill);border-color:var(--g0-fill);color:var(--g0-on)}
+.seg button[aria-pressed="true"] small{color:inherit}
+.kwl{display:flex;flex-direction:column;gap:6px}
+.kwb{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:left;font-size:14px}
+.kwb .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.kwb .box svg{width:14px;height:14px;opacity:0}
+.kwb.y[aria-pressed="true"]{background:var(--g1-soft);border-color:var(--g1-line)}
+.kwb.r[aria-pressed="true"]{background:var(--g0-soft);border-color:var(--g0-line)}
+.kwb.y[aria-pressed="true"] .box{background:var(--g1-fill);border-color:var(--g1-fill);color:var(--g1-on)}
+.kwb.r[aria-pressed="true"] .box{background:var(--g0-fill);border-color:var(--g0-fill);color:var(--g0-on)}
+.kwb[aria-pressed="true"] .box svg{opacity:1}
+.kwb .lv{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted);flex:none}
+.sh-foot{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding-top:4px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;font-weight:700}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.preview{padding:12px 14px;border-radius:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.preview ul{margin:0;padding-left:18px;font-size:13px;color:var(--muted);max-height:120px;overflow:auto}
+.matches{display:flex;flex-direction:column;gap:8px;max-height:46dvh;overflow:auto}
+.match{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;align-items:center}
+.match img{width:52px;height:52px;border-radius:10px;object-fit:cover;display:block}
+.match .fn{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match select{min-height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);padding:0 8px;width:100%}
+.progress{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+code{font-size:13px;background:var(--surface-2);padding:1px 5px;border-radius:6px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:calc(var(--tray-h) + 14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:8px 8px 8px 16px;border-radius:14px;background:var(--ink);color:var(--bg);box-shadow:var(--shadow-lift);font-weight:700;font-size:14px}
+.toast span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast button{border:0;border-radius:10px;background:var(--bg);color:var(--ink);font-weight:700;min-height:36px;padding:0 14px;flex:none}
+@media (min-width:900px){.toast{bottom:22px}}
+
+body.dragging, body.dragging *{cursor:grabbing !important;user-select:none;-webkit-user-select:none}
+@media (max-width:599px){
+  .actions .btn{padding:8px 11px}
+  .field{flex-basis:130px}
+}
+.more > summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;gap:8px;color:var(--accent)}
+.more[open] > summary{margin-bottom:10px}
+.more > div{display:flex;flex-direction:column;gap:14px}
+.sid{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.course{font-size:clamp(22px,6vw,28px);overflow-wrap:anywhere}
+.tbl-un{background:transparent;border:2px dashed var(--line);box-shadow:none}
+.tbl-un .tbl-n{font-size:15px;letter-spacing:.06em}
+.grp.nolabel{grid-template-columns:minmax(0,1fr)}
+.icon svg{width:22px;height:22px}
+.brand-btn{border:0;background:transparent;padding:2px 8px 2px 0;border-radius:12px;cursor:pointer;text-align:left;align-items:center;gap:8px;color:inherit;min-height:44px}
+.brand-btn .caret{font-size:15px;color:var(--muted)}
+.brand-btn:hover .caret{color:var(--accent)}
+.boards{display:flex;flex-direction:column;gap:8px}
+.board-row{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);text-align:left}
+.board-row .bt{font-weight:700;font-size:16px}
+.board-row .bm{font-size:13px;color:var(--muted)}
+.board-row.current{border-color:var(--accent);background:var(--accent-soft)}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.tw{display:flex;align-items:center;gap:8px}
+.tw span{width:34px;font-weight:700;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tw input{flex:1;min-width:0;min-height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);padding:6px 10px;font-size:15px}
+.lvls{display:flex;flex-direction:column;gap:14px}
+.lvl{padding:12px;border-radius:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:8px}
+.lvl h3{margin:0}
+.rlist{display:flex;flex-direction:column;gap:8px}
+.rrow{display:grid;grid-template-columns:84px minmax(0,1fr) minmax(0,2fr) 44px;gap:8px;align-items:center}
+.rrow select,.rrow input{min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface-2);padding:8px 10px;font-size:15px;width:100%;min-width:0}
+.rrow[data-lvl="1"] select{background:var(--g1-soft);border-color:var(--g1-line)}
+.rrow[data-lvl="0"] select{background:var(--g0-soft);border-color:var(--g0-line)}
+@media (max-width:599px){.rrow{grid-template-columns:84px minmax(0,1fr) 44px}.rrow input[data-f="full"]{grid-column:1/-1;grid-row:2}}
+.ready{padding:12px 14px;border-radius:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.chk{display:flex;align-items:center;gap:10px;min-height:40px;font-size:14px}
+.chk input{width:20px;height:20px;accent-color:var(--accent)}
+.missing{margin:0;padding-left:18px;font-size:13px;max-height:180px;overflow:auto}
+.missing code{font-size:12px}
+@media (prefers-reduced-motion: reduce){ .tile,.tile.flash{transition:none;animation:none} }
+</style>
+</head>
+<body>
+
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="row1">
+      <button class="brand brand-btn" id="btnBoards" type="button" aria-label="Switch board" title="Switch board"><span class="course" id="brandTitle">Participation Board</span><span class="caret" aria-hidden="true">▾</span></button>
+      <div class="actions">
+        <button class="icon" id="btnSettings" type="button" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        <button class="btn" id="btnRoster" type="button">Roster</button>
+        <button class="btn" id="btnPhotos" type="button">Photos</button>
+        <button class="btn primary" id="btnExport" type="button"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12"/></svg>Export</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="week">
+        <button class="icon" id="wkPrev" type="button" aria-label="Previous week">‹</button>
+        <select id="wkSel" aria-label="Week"></select>
+        <button class="icon" id="wkNext" type="button" aria-label="Next week">›</button>
+      </div>
+      <label class="field"><span>Topic</span><input id="wkTopic" placeholder="e.g. Intro" autocomplete="off"></label>
+      <label class="field"><span>TA</span><input id="wkTA" placeholder="Your name" autocomplete="off"></label>
+      <div class="tally" id="tally" aria-label="Points this week"></div>
+      <div class="sizes" role="group" aria-label="Tile size">
+        <button type="button" data-size="s" aria-pressed="false" id="sizeS">S</button>
+        <button type="button" data-size="m" aria-pressed="true" id="sizeM">M</button>
+        <button type="button" data-size="l" aria-pressed="false" id="sizeL">L</button>
+      </div>
+      <div class="save" id="saveState" data-s="local"><i></i><span>Loading…</span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="main-col">
+      <div id="banners"></div>
+      <div id="modeBar"></div>
+      <main class="board" id="board" aria-live="polite">
+        <div class="loading">Loading your class…</div>
+      </main>
+    </div>
+
+    <aside class="rubric" id="rubric" aria-label="Rubric markers">
+      <div class="rb-top">
+        <p class="rb-title">Rubric markers</p>
+        <p class="rb-hint">Drag onto a student, or tap a marker to stamp several.</p>
+        <div class="chip G2" role="button" tabindex="0" data-k="G2"><span class="lbl-s">↺ 2 pts</span><span class="lbl-f">↺ Back to 2 pts (clears reasons)</span></div>
+        <button class="icon" id="trayToggle" type="button" aria-expanded="true" aria-label="Hide markers">▾</button>
+      </div>
+      <div class="rb-body">
+        <section class="rb-sec" data-lvl="1">
+          <h3 id="rbH1">1 pt</h3>
+          <div class="chips" id="rbChips1">
+            <div class="chip G1" role="button" tabindex="0" data-k="G1"><span class="lbl-s">1 pt</span><span class="lbl-f">1 pt, no reason</span></div>
+          </div>
+        </section>
+        <section class="rb-sec" data-lvl="0">
+          <h3 id="rbH0">0 pt</h3>
+          <div class="chips" id="rbChips0">
+            <div class="chip G0" role="button" tabindex="0" data-k="G0"><span class="lbl-s">0 pt</span><span class="lbl-f">0 pt, no reason</span></div>
+          </div>
+        </section>
+        <details class="rb-ref">
+          <summary>Full rubric</summary>
+          <div id="rbRef"></div>
+        </details>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="chip ghost" id="ghost" aria-hidden="true" hidden></div>
+<div id="sheetHost"></div>
+<div class="toast" id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" id="toastBtn">Undo</button></div>
+
+<script>
+/* Participation workbook builder. All wording comes from the board's settings. */
+function buildRubricWorkbook(ExcelJS, input) {
+  // input: { title, levels:{2:{name,short,desc},1:{...},0:{...}}, notes, keywords:[{key,lvl,full,archived}],
+  //          tables:[{id, unassigned, groups:[{id, students:[{sid,name,studentId}]}]}],
+  //          weeks:[{num, ta, topic, grades:{sid:{g,reasons,note}}}], summary }
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Participation Board';
+  wb.created = new Date();
+  wb.calcProperties.fullCalcOnLoad = true;
+
+  const L = input.levels;
+  const KW = new Map(input.keywords.map(k => [k.key, k]));
+  const FILL = c => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: c } });
+  const Y_SOFT = 'FFFFF2CC', R_SOFT = 'FFF8D7DA', YELLOW = 'FFFFFF00', HEAD = 'FFE7ECF1';
+  const thin = { style: 'thin', color: { argb: 'FFB8C2CC' } };
+  const BORDER = { top: thin, left: thin, bottom: thin, right: thin };
+  const tableVal = t => (t.unassigned ? 'Unassigned' : /^\d+$/.test(String(t.id)) ? Number(t.id) : String(t.id));
+  const gradeOf = r => (r && typeof r.g === 'number' ? r.g : 2);
+  const ptsLabel = p => `${p} pt${p === 2 ? 's' : ''}`;
+  const active = input.keywords.filter(k => !k.archived);
+  const kwRange = `Lists!$A$1:$A$${Math.max(1, active.length)}`;
+  const weeks = [...input.weeks].sort((a, b) => a.num - b.num);
+
+  if (input.summary && weeks.length) {
+    const hasId = input.tables.some(t => t.groups.some(g => g.students.some(s => s.studentId)));
+    const C0 = hasId ? 4 : 3;
+    const sm = wb.addWorksheet('Summary', { views: [{ state: 'frozen', xSplit: C0, ySplit: 2 }] });
+    const nW = weeks.length;
+    const idVal = v => (/^[1-9]\d{0,14}$/.test(String(v || '')) ? Number(v) : (v || null));
+    sm.getCell(1, 1).value = `${input.title}: points per week (2 = ${L[2].short}, 1 = ${L[1].short}, 0 = ${L[0].short})`;
+    sm.getCell(1, 1).font = { bold: true, size: 12 };
+    const head = ['Table', 'Group', ...(hasId ? ['Student ID'] : []), 'Student Name', ...weeks.map(w => `W${w.num}${w.topic ? ' ' + w.topic : ''}`), 'Total', 'Max'];
+    head.forEach((h, i) => {
+      const c = sm.getCell(2, i + 1);
+      c.value = h; c.font = { bold: true }; c.fill = FILL(HEAD); c.border = BORDER;
+      c.alignment = { wrapText: true, vertical: 'middle', horizontal: i >= C0 ? 'center' : 'left' };
+    });
+    sm.getRow(2).height = 32;
+    sm.getColumn(1).width = 11; sm.getColumn(2).width = 7;
+    if (hasId) sm.getColumn(3).width = 12;
+    sm.getColumn(C0).width = 32;
+    for (let i = 0; i < nW; i++) sm.getColumn(C0 + 1 + i).width = 9;
+    sm.getColumn(C0 + 1 + nW).width = 8; sm.getColumn(C0 + 2 + nW).width = 8;
+    let r = 3;
+    for (const t of input.tables) for (const g of t.groups) for (const s of g.students) {
+      sm.getCell(r, 1).value = tableVal(t);
+      sm.getCell(r, 2).value = g.id || null;
+      if (hasId) sm.getCell(r, 3).value = idVal(s.studentId);
+      sm.getCell(r, C0).value = s.name;
+      weeks.forEach((w, i) => {
+        const c = sm.getCell(r, C0 + 1 + i);
+        const pts = gradeOf(w.grades[s.sid]);
+        c.value = pts; c.alignment = { horizontal: 'center' };
+        if (pts === 1) c.fill = FILL(Y_SOFT);
+        if (pts === 0) c.fill = FILL(R_SOFT);
+      });
+      const first = sm.getCell(r, C0 + 1).address, last = sm.getCell(r, C0 + nW).address;
+      sm.getCell(r, C0 + 1 + nW).value = { formula: `SUM(${first}:${last})`, result: weeks.reduce((a, w) => a + gradeOf(w.grades[s.sid]), 0) };
+      sm.getCell(r, C0 + 1 + nW).font = { bold: true };
+      sm.getCell(r, C0 + 2 + nW).value = nW * 2;
+      for (let c = 1; c <= C0 + 2 + nW; c++) sm.getCell(r, c).border = BORDER;
+      r++;
+    }
+  }
+
+  for (const w of weeks) {
+    const ws = wb.addWorksheet(`Week ${w.num}`, { views: [{ state: 'frozen', ySplit: 7 }] });
+    [11, 7.25, 36, 10, 58, 50].forEach((wd, i) => { ws.getColumn(i + 1).width = wd; });
+    const wrap = { wrapText: true, vertical: 'top' };
+    [[1, 2], [2, 1], [3, 0]].forEach(([row, p]) => {
+      ws.mergeCells(row, 1, row, 6);
+      const c = ws.getCell(row, 1);
+      c.value = `${ptsLabel(p)}: ${L[p].name}${L[p].desc ? ': ' + L[p].desc : ''}`;
+      c.alignment = wrap;
+      ws.getRow(row).height = 32;
+    });
+    ws.getCell(1, 1).font = { color: { argb: 'FF1C7C47' } };
+    ws.getCell(2, 1).font = { color: { argb: 'FF8A5A00' } };
+    ws.getCell(3, 1).font = { color: { argb: 'FFB42318' } };
+    ws.getCell(4, 1).value = 'Assign 1 or 0. Otherwise, the grade will be 2.';
+    ws.getCell(4, 1).font = { bold: true };
+    const ta = ws.getCell(5, 3);
+    ta.value = `TA Name (Write your name): ${w.ta || ''}`;
+    ta.fill = FILL(YELLOW);
+    ws.mergeCells(6, 1, 6, 6);
+    const wk = ws.getCell(6, 1);
+    wk.value = `Week - ${w.num}${w.topic ? ` (${w.topic})` : ''}`;
+    wk.font = { bold: true, size: 13 };
+    const head = ['Table', 'Group', 'Student Name', 'Assign 1 or 0 pts',
+      `TA Notes:\nYELLOW ones are keywords for "${L[1].name}"-1 pt AND Red ones are keywords for "${L[0].name}" 0 pt`,
+      'Optional: Please add additional notes if needed'];
+    head.forEach((h, i) => {
+      const c = ws.getCell(7, i + 1);
+      c.value = h; c.font = { bold: true }; c.fill = FILL(HEAD); c.border = BORDER;
+      c.alignment = { wrapText: true, vertical: 'middle' };
+    });
+    ws.getRow(7).height = 48;
+
+    let r = 8;
+    const firstRow = r;
+    for (const t of input.tables) {
+      for (const g of t.groups) {
+        if (!g.students.length) continue;
+        for (const s of g.students) {
+          const rec = w.grades[s.sid];
+          const pts = gradeOf(rec);
+          const reasons = (rec && rec.reasons || []).map(k => KW.get(k)).filter(Boolean);
+          ws.getCell(r, 1).value = tableVal(t);
+          ws.getCell(r, 2).value = g.id || null;
+          ws.getCell(r, 3).value = s.name;
+          ws.getCell(r, 4).value = pts < 2 ? pts : null;
+          ws.getCell(r, 4).alignment = { horizontal: 'center', vertical: 'top' };
+          ws.getCell(r, 5).value = reasons.length ? reasons.map(k => k.full).join('\n') : null;
+          ws.getCell(r, 6).value = rec && rec.note ? rec.note : null;
+          ws.getCell(r, 5).alignment = wrap; ws.getCell(r, 6).alignment = wrap;
+          if (pts < 2) {
+            const f = FILL(pts === 1 ? Y_SOFT : R_SOFT);
+            ws.getCell(r, 4).fill = f; ws.getCell(r, 5).fill = f;
+          }
+          for (let c = 1; c <= 6; c++) ws.getCell(r, c).border = BORDER;
+          ws.getCell(r, 4).dataValidation = { type: 'list', allowBlank: true, showErrorMessage: true, formulae: ['"0,1"'] };
+          if (active.length) ws.getCell(r, 5).dataValidation = { type: 'list', allowBlank: true, showErrorMessage: false, formulae: [kwRange] };
+          if (reasons.length > 1) ws.getRow(r).height = 15 * reasons.length + 2;
+          r++;
+        }
+        r++; // blank row between groups
+      }
+    }
+    if (r === firstRow) r++;
+    r += 1;
+    for (const line of String(input.notes || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)) {
+      ws.getCell(r++, 1).value = line;
+    }
+  }
+
+  const lists = wb.addWorksheet('Lists', { state: 'hidden' });
+  active.forEach((k, i) => {
+    lists.getCell(i + 1, 1).value = k.full;
+    lists.getCell(i + 1, 2).value = k.lvl;
+  });
+  return wb;
+}
+
+
+function parseRosterSheetRows(rows) {
+  // rows: array of arrays of cell values (strings/numbers). Finds a header with Table / Group / Name.
+  const txt = v => {
+    if (v == null) return '';
+    if (typeof v === 'object') {
+      if (v.richText) return v.richText.map(t => t.text).join('').trim();
+      if ('text' in v) return String(v.text ?? '').trim();
+      if ('result' in v) return String(v.result ?? '').trim();
+      if (v instanceof Date) return '';
+    }
+    return String(v).trim();
+  };
+  let hi = -1, ci = { t: 0, g: 1, n: 2 };
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
+    const r = rows[i].map(v => txt(v).toLowerCase());
+    const t = r.findIndex(v => /^table\b/.test(v)), g = r.findIndex(v => /^group\b/.test(v)), n = r.findIndex(v => /name/.test(v));
+    if (t >= 0 && n >= 0) { hi = i; ci = { t, g, n }; break; }
+  }
+  const out = [];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i];
+    const name = txt(r[ci.n]);
+    const table = txt(r[ci.t]).replace(/\.0+$/, '');
+    const group = ci.g >= 0 ? txt(r[ci.g]).toLowerCase() : '';
+    if (!name || name.length > 80) continue;
+    if (hi < 0 && !/^\d+$/.test(table)) continue;
+    out.push({ table: table || '', group: group || '', name });
+  }
+  return out;
+}
+
+
+(() => {
+'use strict';
+
+/* ================= constants ================= */
+/* Rubric and board name live in the board's settings (on this device and in backups).
+   These generic defaults are used until the user sets up their own. */
+const SETTINGS_PATH = 'meta/settings';
+const DEFAULT_SETTINGS = {
+  title:'Participation Board',
+  weeks:16,
+  levels:{
+    2:{name:'Active participation', short:'Active', desc:'Contributes ideas, works on the problems and communicates with the group.'},
+    1:{name:'Passive participation', short:'Passive', desc:'Takes part when asked, but inconsistently.'},
+    0:{name:'Not engaged', short:'Not engaged', desc:'Does not take part in the group work.'},
+  },
+  reasons:[
+    {key:'d1', lvl:1, short:'Quiet', full:'Mostly quiet during group work'},
+    {key:'d2', lvl:1, short:'Relies on others', full:'Relies on others without contributing'},
+    {key:'d3', lvl:0, short:'Off task', full:'Off task for most of the session'},
+    {key:'d4', lvl:0, short:'Absent', full:'Absent'},
+  ],
+  notes:'',
+  topics:{},   // week number -> topic, e.g. {1:'Intro'}
+};
+let KW = {};
+let KW_KEYS = [];
+const GRADE_LABEL = {G2:'Back to 2 pts', G1:'1 pt', G0:'0 pt'};
+const GROUPS_DEFAULT = ['a','b','c'];
+const SEATS_DEFAULT = 3;
+const PATH = {
+  layout:'meta/layout',
+  student:id => 'students/' + id,
+  grade:(w, id) => `grades/w${w}__${id}`,
+  week:w => 'weeks/w' + w,
+};
+const LKEY = 'pboard-data-v1';
+const BOARDS_KEY = 'pboard-boards', CUR_KEY = 'pboard-current';
+const APP_ID = 'participation-board';
+const DEL = null;
+
+/* ================= helpers ================= */
+function mergeSettings(v) {
+  const d = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  if (!v || typeof v !== 'object') return d;
+  const out = {...d};
+  out.title = String(v.title || '').trim() || d.title;
+  out.weeks = Math.max(1, Math.min(52, parseInt(v.weeks, 10) || d.weeks));
+  out.levels = {};
+  for (const p of [2, 1, 0]) {
+    const lv = (v.levels && v.levels[p]) || {};
+    out.levels[p] = {name:String(lv.name || d.levels[p].name), short:String(lv.short || lv.name || d.levels[p].short), desc:String(lv.desc ?? d.levels[p].desc)};
+  }
+  if (Array.isArray(v.reasons)) {
+    const seen = new Set();
+    out.reasons = v.reasons.filter(r => r && r.key && !seen.has(String(r.key)) && seen.add(String(r.key))).map(r => ({
+      key:String(r.key), lvl:+r.lvl === 0 ? 0 : 1,
+      short:String(r.short || r.full || r.key), full:String(r.full || r.short || r.key),
+      ...(r.archived ? {archived:true} : {}),
+    }));
+  }
+  out.notes = String(v.notes || '');
+  out.topics = {};
+  const tp = v.topics;
+  if (Array.isArray(tp)) tp.forEach((x, i) => { if (x != null && String(x).trim()) out.topics[i + 1] = String(x).trim(); });
+  else if (tp && typeof tp === 'object') for (const [k, x] of Object.entries(tp)) {
+    const w = parseInt(k, 10);
+    if (w >= 1 && w <= 52 && x != null && String(x).trim()) out.topics[w] = String(x).trim();
+  }
+  return out;
+}
+const settingsTopic = w => (S.settings && S.settings.topics[w]) || '';
+const topicFor = w => { const m = S.weeks.get(w); return (m && m.topic) || settingsTopic(w); };
+const maxWeek = () => (S.settings ? S.settings.weeks : 16);
+const activeReasons = lvl => S.settings.reasons.filter(r => !r.archived && (lvl == null || r.lvl === lvl));
+const kwShort = k => (KW[k] ? KW[k].short : k);
+const levelShort = g => ((S.settings && S.settings.levels[g]) || {}).short || '';
+const slug = t => (String(t || '').replace(/[ıİşŞğĞçÇöÖüÜ]/g, c => ({'ı':'i','İ':'I','ş':'s','Ş':'S','ğ':'g','Ğ':'G','ç':'c','Ç':'C','ö':'o','Ö':'O','ü':'u','Ü':'U'}[c])).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Board');
+const seatName = (t, g) => (t ? `Table ${t}${g || ''}` : 'Unassigned');
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => o == null ? o : JSON.parse(JSON.stringify(o));
+const natural = (a, b) => String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:'base'});
+const newId = () => 's' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+/* Boards: one per course, section or semester. Board 'main' uses the original storage names. */
+const dataKey = (b = S.board) => (b === 'main' ? LKEY : `${LKEY}:${b}`);
+const bkey = (name, b = S.board) => (b === 'main' ? `pboard-${name}` : `pboard-${name}:${b}`);
+const pk = sid => (S.board === 'main' ? String(sid) : `${S.board}|${sid}`);
+const ownKey = (key, b = S.board) => { key = String(key); if (b === 'main') return key.includes('|') ? null : key; return key.startsWith(b + '|') ? key.slice(b.length + 1) : null; };
+function readBoards() { try { const v = JSON.parse(localStorage.getItem(BOARDS_KEY) || 'null'); if (Array.isArray(v) && v.length) return v; } catch {} return [{id:'main', title:''}]; }
+function writeBoards(list) { lsSet(BOARDS_KEY, JSON.stringify(list)); }
+function boardData(id) { try { return JSON.parse(localStorage.getItem(dataKey(id)) || '{}') || {}; } catch { return {}; } }
+const TRMAP = {'ı':'i','İ':'i','ş':'s','Ş':'s','ğ':'g','Ğ':'g','ç':'c','Ç':'c','ö':'o','Ö':'o','ü':'u','Ü':'u'};
+const norm = s => String(s || '').replace(/[ıİşŞğĞçÇöÖüÜ]/g, c => TRMAP[c]).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const initials = n => { const p = String(n || '?').trim().split(/\s+/); return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toLocaleUpperCase('tr-TR'); };
+const hue = n => { let h = 0; for (const c of String(n)) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
+const narrow = () => window.matchMedia('(max-width: 899px)').matches;
+const ICON_CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5 6.5 12 13 4.5"/></svg>';
+const ICON_NOTE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5 13.5 5 6 12.5H3.5V10z"/></svg>';
+
+/* ================= state ================= */
+const S = {
+  mode:'loading',            // 'db' | 'local'
+  db:null, assets:null, downloads:null, user:null,
+  canWrite:true,
+  ready:{layout:false, students:false, grades:false, weeks:false},
+  layout:null,               // {tables:[{id, groups:[...]}]}
+  students:new Map(),        // sid -> {name, table, group, order, photo, ex}
+  grades:new Map(),          // sid -> rec (current week)
+  weeks:new Map(),           // num -> {week, ta, topic}
+  settings:null,
+  board:'main',
+  week:Math.min(52, Math.max(1, parseInt(lsGet('pboard-week', '0'), 10) || 1)),
+  weekFromPref:!!parseInt(lsGet('pboard-week', '0'), 10),
+  armed:null,
+  editing:false,
+  sheet:null,
+  unsub:{},
+  photoUrl:new Map(),
+  thumbs:new Map(),
+  found:new Map(),
+  missing:new Set(),
+  lastStruct:'',
+};
+let LOCAL = {};
+
+/* ================= persistence ================= */
+const Q = {pending:new Map(), inflight:new Set(), timers:new Map(), ready:[], active:0, retry:new Map(), failing:new Set()};
+const busy = p => Q.pending.has(p) || Q.inflight.has(p);
+function busyPaths(prefix) {
+  const out = new Set();
+  for (const p of Q.pending.keys()) if (p.startsWith(prefix)) out.add(p);
+  for (const p of Q.inflight) if (p.startsWith(prefix)) out.add(p);
+  return out;
+}
+function persist(path, data, delay = 0) {
+  if (S.mode === 'local') {
+    if (data === DEL) delete LOCAL[path]; else LOCAL[path] = clone(data);
+    saveLocalSoon();
+    return;
+  }
+  if (S.mode !== 'db') return;
+  Q.pending.set(path, data === DEL ? DEL : clone(data));
+  clearTimeout(Q.timers.get(path));
+  Q.timers.set(path, setTimeout(() => { Q.timers.delete(path); markReady(path); }, delay));
+  renderSave();
+}
+function markReady(path) {
+  if (!Q.ready.includes(path)) Q.ready.push(path);
+  kick();
+}
+function kick() {
+  while (Q.active < 4 && Q.ready.length) {
+    const p = Q.ready.shift();
+    if (Q.inflight.has(p) || !Q.pending.has(p)) continue;
+    run(p);
+  }
+}
+async function run(path) {
+  const data = Q.pending.get(path);
+  Q.pending.delete(path);
+  Q.inflight.add(path); Q.active++;
+  renderSave();
+  let retryIn = 0;
+  try {
+    const ref = S.db.doc(path);
+    if (data === DEL) await ref.delete(); else await ref.set(data);
+    Q.failing.delete(path); Q.retry.delete(path);
+  } catch (e) {
+    const code = e && e.code;
+    if (code === 'invalid_argument' || code === 'transform_error') {
+      console.warn('Write refused', path, e);
+      if (S.canWriteKnown !== true) setReadOnly();
+      Q.failing.delete(path);
+    } else if (code === 'quota_exceeded') {
+      toast('Storage for this board is full. Remove unused students or photos, then try again.');
+      Q.failing.delete(path);
+    } else if (code === 'revoked' || code === 'not_granted' || code === 'capability_disabled' || code === 'capability_removed') {
+      setReadOnly();
+    } else {
+      if (!Q.pending.has(path)) Q.pending.set(path, data);
+      const n = (Q.retry.get(path) || 0) + 1;
+      Q.retry.set(path, n);
+      Q.failing.add(path);
+      retryIn = Math.min(20000, (code === 'resource_exhausted' ? 3000 : 1500) * n) + Math.random() * 800;
+    }
+  } finally {
+    Q.inflight.delete(path); Q.active--;
+    if (retryIn) setTimeout(() => markReady(path), retryIn);
+    else if (Q.pending.has(path) && !Q.timers.has(path)) markReady(path);
+    kick();
+    renderSave();
+  }
+}
+function flushAll() {
+  for (const [p, t] of Q.timers) { clearTimeout(t); Q.timers.delete(p); markReady(p); }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAll(); });
+
+function loadLocal() { try { LOCAL = JSON.parse(localStorage.getItem(dataKey()) || '{}') || {}; } catch { LOCAL = {}; } }
+function saveLocalSoon() {
+  clearTimeout(saveLocalSoon.t);
+  saveLocalSoon.t = setTimeout(() => {
+    try { localStorage.setItem(dataKey(), JSON.stringify(LOCAL)); S.localOk = true; }
+    catch { S.localOk = false; }
+    renderSave();
+  }, 200);
+}
+
+function renderSave() {
+  const el = $('#saveState'); if (!el) return;
+  let s = 'ok', t = 'Saved';
+  if (S.mode === 'loading') { s = 'local'; t = 'Loading…'; }
+  else if (S.mode === 'local') { s = S.localOk === false ? 'err' : 'local'; t = S.localOk === false ? 'Not saved: storage is off' : 'Saved on this device'; }
+  else if (!S.canWrite) { s = 'local'; t = 'View only'; }
+  else if (Q.failing.size) { s = 'err'; t = 'Offline · retrying'; }
+  else if (Q.pending.size || Q.inflight.size) { s = 'busy'; t = 'Saving…'; }
+  el.dataset.s = s; el.lastElementChild.textContent = t;
+}
+function setReadOnly() {
+  S.canWrite = false; S.canWriteKnown = false;
+  S.armed = null;
+  $('#rubric').classList.add('ro');
+  renderAll();
+}
+
+/* ================= data views ================= */
+function tablesView() {
+  const tables = new Map();
+  for (const t of (S.layout && S.layout.tables) || []) {
+    const id = String(t.id);
+    tables.set(id, {id, groups:new Map((t.groups || []).map(g => [String(g), []]))});
+  }
+  const un = [];
+  for (const [sid, st] of S.students) {
+    const tid = String(st.table ?? '').trim();
+    if (!tid) { un.push({sid, ...st}); continue; }
+    const gid = String(st.group ?? '');
+    if (!tables.has(tid)) tables.set(tid, {id:tid, groups:new Map()});
+    const T = tables.get(tid);
+    if (!T.groups.has(gid)) T.groups.set(gid, []);
+    T.groups.get(gid).push({sid, ...st});
+  }
+  const byOrder = (a, b) => ((a.order ?? 1e9) - (b.order ?? 1e9)) || natural(a.name, b.name);
+  const out = [...tables.values()].sort((a, b) => natural(a.id, b.id)).map(t => ({
+    id:t.id,
+    groups:[...t.groups.entries()].sort((a, b) => natural(a[0], b[0])).map(([gid, list]) => ({id:gid, students:list.sort(byOrder)})),
+  }));
+  if (un.length || (S.editing && S.canWrite)) out.push({id:'', unassigned:true, groups:[{id:'', students:un.sort(byOrder)}]});
+  return out;
+}
+function layoutFromView(view) { return {tables:view.filter(t => !t.unassigned).map(t => ({id:t.id, groups:t.groups.map(g => g.id)}))}; }
+function saveLayout(layout) { S.layout = layout; persist(PATH.layout, layout); }
+
+const blankRec = () => ({g:2, reasons:[], manual:false, note:''});
+const recOf = sid => S.grades.get(sid) || null;
+const gOf = sid => { const r = recOf(sid); return r && typeof r.g === 'number' ? r.g : 2; };
+const isBlank = r => !r || (r.g === 2 && !(r.reasons || []).length && !String(r.note || '').trim());
+const computeG = reasons => reasons.reduce((g, k) => Math.min(g, KW[k] ? KW[k].lvl : 2), 2);
+/* Photos: a copy kept in this browser (IndexedDB) wins; otherwise the page looks in the
+   photos/ folder next to this file for "<Student Name>.jpg" (or .jpeg/.png/.webp, or an ASCII spelling). */
+const PHOTO_DIR = 'photos/';
+const FOLDER = location.protocol === 'file:';
+const PHOTO_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'JPG', 'JPEG', 'PNG'];
+const TRCASE = {'ı':'i','İ':'I','ş':'s','Ş':'S','ğ':'g','Ğ':'G','ç':'c','Ç':'C','ö':'o','Ö':'O','ü':'u','Ü':'U'};
+const asciiName = n => String(n || '').replace(/[ıİşŞğĞçÇöÖüÜ]/g, c => TRCASE[c]).normalize('NFD').replace(/[̀-ͯ]/g, '');
+const encPath = p => p.split('/').map(encodeURIComponent).join('/');
+function cleanPhotoPath(p) {
+  p = String(p || '').trim().replace(/^["']|["']$/g, '').replace(/\\/g, '/').replace(/^\.\//, '');
+  if (!p) return '';
+  if (/^https?:\/\//i.test(p)) return p;
+  if (/^[a-z]:\//i.test(p) || p.startsWith('/') || /^file:/i.test(p)) { const base = p.split('/').pop(); return base ? PHOTO_DIR + base : ''; }
+  return p;
+}
+function photoCandidates(st) {
+  const out = [];
+  const push = u => { if (u && !out.includes(u)) out.push(u); };
+  const pp = cleanPhotoPath(st.photoPath);
+  if (pp) {
+    if (/^https?:/i.test(pp)) push(pp);
+    else {
+      push(encPath(pp));
+      const i = pp.lastIndexOf('/'), dir = pp.slice(0, i + 1), file = pp.slice(i + 1), stem = file.replace(/\.[^.]+$/, '');
+      for (const e of PHOTO_EXTS) push(encPath(dir + stem + '.' + e));
+    }
+  }
+  if (st.studentId) for (const e of PHOTO_EXTS) push(PHOTO_DIR + encodeURIComponent(st.studentId + '.' + e));
+  if (st.photoFile) push(PHOTO_DIR + encodeURIComponent(st.photoFile));
+  const n = String(st.name || '').trim();
+  if (!n) return out;
+  const bases = [];
+  for (const b of [n.normalize('NFC'), n.normalize('NFD'), asciiName(n), asciiName(n).replace(/\s+/g, '_')]) if (b && !bases.includes(b)) bases.push(b);
+  for (const b of bases) for (const e of PHOTO_EXTS) push(PHOTO_DIR + encodeURIComponent(b + '.' + e));
+  return out;
+}
+function photoImg(sid, st) {
+  const t = S.thumbs.get(sid);
+  if (t) return `<img src="${esc(t)}" alt="">`;
+  const f = S.found.get(sid);
+  if (f) return `<img src="${esc(f)}" alt="">`;
+  if (!FOLDER || S.missing.has(sid)) return '';
+  const c = photoCandidates(st);
+  return c.length ? `<img src="${esc(c[0])}" data-psid="${esc(sid)}" data-try="0" alt="">` : '';
+}
+const hasPhoto = sid => S.thumbs.has(sid) || S.found.has(sid);
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || img.dataset.try == null) return;
+  const sid = img.dataset.psid, st = S.students.get(sid);
+  const c = st ? photoCandidates(st) : [];
+  const i = +img.dataset.try + 1;
+  if (i < c.length) { img.dataset.try = String(i); img.src = c[i]; }
+  else { if (st) S.missing.add(sid); img.remove(); }
+}, true);
+document.addEventListener('load', e => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || img.dataset.try == null) return;
+  S.found.set(img.dataset.psid, img.getAttribute('src'));
+  S.missing.delete(img.dataset.psid);
+  delete img.dataset.try;
+}, true);
+const probe = url => new Promise(res => { const i = new Image(); i.onload = () => res(true); i.onerror = () => res(false); i.src = url; });
+async function findFolderPhoto(sid) {
+  const st = S.students.get(sid); if (!st) return null;
+  for (const u of photoCandidates(st)) if (await probe(u)) { S.found.set(sid, u); S.missing.delete(sid); return u; }
+  S.found.delete(sid); S.missing.add(sid); return null;
+}
+
+/* in-browser photo copies */
+const IDB = {db:null};
+function idbOpen() {
+  return new Promise(res => {
+    try {
+      const r = indexedDB.open('pboard-photos', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('p');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => res(null);
+      r.onblocked = () => res(null);
+    } catch { res(null); }
+  });
+}
+function idbReq(mode, fn) {
+  return new Promise((res, rej) => {
+    const tx = IDB.db.transaction('p', mode);
+    const req = fn(tx.objectStore('p'));
+    tx.oncomplete = () => res(req && req.result);
+    tx.onerror = () => rej(tx.error);
+    tx.onabort = () => rej(tx.error);
+  });
+}
+async function thumbsLoad() {
+  if (!IDB.db) IDB.db = await idbOpen();
+  if (!IDB.db) return;
+  await new Promise(res => {
+    try {
+      const tx = IDB.db.transaction('p', 'readonly');
+      const req = tx.objectStore('p').openCursor();
+      req.onsuccess = () => { const c = req.result; if (c) { const sid = ownKey(c.key); if (sid) S.thumbs.set(sid, URL.createObjectURL(c.value)); c.continue(); } };
+      tx.oncomplete = res; tx.onerror = res; tx.onabort = res;
+    } catch { res(); }
+  });
+}
+function setThumbURL(sid, url) {
+  const old = S.thumbs.get(sid);
+  if (old && old.startsWith('blob:') && old !== url) URL.revokeObjectURL(old);
+  if (url) S.thumbs.set(sid, url); else S.thumbs.delete(sid);
+}
+async function thumbPut(sid, blob) {
+  if (IDB.db) {
+    try { await idbReq('readwrite', st => st.put(blob, pk(sid))); setThumbURL(sid, URL.createObjectURL(blob)); return; }
+    catch (e) { console.warn('IndexedDB', e); }
+  }
+  const small = await blobToDataURL(await resizeImage(blob, 200, 0.8));
+  const cur = S.students.get(sid); if (cur) putStudent(sid, {...cur, thumb:small});
+  setThumbURL(sid, small);
+}
+async function thumbDel(sid) {
+  setThumbURL(sid, null);
+  const cur = S.students.get(sid);
+  if (cur && cur.thumb) { const n = {...cur}; delete n.thumb; putStudent(sid, n); }
+  if (IDB.db) { try { await idbReq('readwrite', st => st.delete(pk(sid))); } catch {} }
+}
+async function thumbMove(from, to) {
+  if (!IDB.db) return;
+  try {
+    const blob = await idbReq('readonly', st => st.get(pk(from)));
+    if (blob) { await idbReq('readwrite', st => st.put(blob, pk(to))); setThumbURL(to, URL.createObjectURL(blob)); }
+    await idbReq('readwrite', st => st.delete(pk(from))); setThumbURL(from, null);
+  } catch (e) { console.warn(e); }
+}
+
+function ensureWeek() {
+  if (S.weeks.has(S.week)) return;
+  saveWeekMeta(0);
+}
+function saveWeekMeta(delay) {
+  const typed = $('#wkTopic').value.trim();
+  const m = {week:S.week, ta:$('#wkTA').value.trim(), topic:typed === settingsTopic(S.week) ? '' : typed};
+  S.weeks.set(S.week, m);
+  if (m.ta) lsSet('pboard-ta', m.ta);
+  if (S.canWrite) persist(PATH.week(S.week), m, delay);
+  renderWeekSelect();
+}
+function setRec(sid, rec, delay = 0) {
+  if (!S.canWrite) return;
+  const path = PATH.grade(S.week, sid);
+  if (isBlank(rec)) {
+    S.grades.delete(sid);
+    persist(path, DEL, delay);
+  } else {
+    const r = {week:S.week, sid, g:rec.g, reasons:[...(rec.reasons || [])], manual:!!rec.manual, note:String(rec.note || '')};
+    const st = S.students.get(sid);
+    if (st && st.ex) r.ex = true;
+    S.grades.set(sid, r);
+    persist(path, r, delay);
+  }
+  ensureWeek();
+  patchTile(sid);
+  renderTally();
+  if (S.sheet && S.sheet.kind === 'student' && S.sheet.sid === sid) refreshStudentState();
+}
+
+/* ================= apply markers ================= */
+function applyKey(sid, key, toggle) {
+  if (!S.canWrite || !S.students.has(sid)) return;
+  const before = recOf(sid);
+  const r = before ? clone(before) : blankRec();
+  r.reasons = r.reasons || [];
+  let msg;
+  if (key === 'G2') {
+    r.g = 2; r.reasons = []; r.manual = false; msg = GRADE_LABEL.G2;
+  } else if (key === 'G1' || key === 'G0') {
+    const g = key === 'G1' ? 1 : 0;
+    r.g = g; r.manual = true; msg = GRADE_LABEL[key];
+  } else {
+    const K = KW[key];
+    if (r.reasons.includes(key)) {
+      if (!toggle) { flashTile(sid); return; }
+      r.reasons = r.reasons.filter(k => k !== key);
+      if (!r.manual) r.g = computeG(r.reasons);
+      msg = 'Removed: ' + K.short;
+    } else {
+      r.reasons.push(key);
+      r.g = Math.min(typeof r.g === 'number' ? r.g : 2, K.lvl);
+      msg = K.short;
+    }
+  }
+  setRec(sid, r);
+  flashTile(sid);
+  const name = (S.students.get(sid) || {}).name || 'student';
+  const wk = S.week;
+  toast(`${msg} → ${name}`, 'Undo', () => { if (S.week === wk) setRec(sid, before ? clone(before) : blankRec()); });
+}
+
+/* ================= rendering ================= */
+let rafRender = 0;
+function scheduleRender() { if (!rafRender) rafRender = requestAnimationFrame(() => { rafRender = 0; renderAll(); }); }
+function renderAll() {
+  renderBoard();
+  renderBanners();
+  renderModeBar();
+  renderTally();
+  renderWeekSelect();
+  renderSave();
+  $('#rubric').classList.toggle('ro', !S.canWrite);
+}
+
+function tileSig(sid) {
+  const st = S.students.get(sid) || {};
+  const r = recOf(sid);
+  return JSON.stringify([st.name, st.photoFile || '', S.thumbs.get(sid) || '', r ? r.g : 2, r ? r.reasons : [], !!(r && r.note)]);
+}
+function tileInner(sid) {
+  const st = S.students.get(sid) || {name:'?'};
+  const r = recOf(sid);
+  const g = r ? r.g : 2;
+  const reasons = (r && r.reasons) || [];
+  const ph = esc(initials(st.name)) + photoImg(sid, st);
+  let why = '';
+  if (reasons.length) why = esc(kwShort(reasons[0])) + (reasons.length > 1 ? ` +${reasons.length - 1}` : '');
+  else if (g < 2) why = esc(levelShort(g));
+  else if (r && r.note) why = 'Note';
+  return `<span class="ph" style="--hue:${hue(st.name)}">${ph}</span>` +
+    `<span class="badge" aria-hidden="true">${g}</span>` +
+    (r && r.note ? `<span class="note-dot" aria-hidden="true">${ICON_NOTE}</span>` : '') +
+    `<span class="nm">${esc(st.name)}</span>` +
+    `<span class="why">${why || '&nbsp;'}</span>`;
+}
+function tileAria(sid) {
+  const st = S.students.get(sid) || {};
+  const r = recOf(sid);
+  const g = r ? r.g : 2;
+  const rs = ((r && r.reasons) || []).map(kwShort).join(', ');
+  return `${st.name}, ${g} points${rs ? ', ' + rs : ''}`;
+}
+function tileHTML(sid) {
+  return `<button type="button" class="tile" data-sid="${esc(sid)}" data-g="${gOf(sid)}" data-sig="${esc(tileSig(sid))}" aria-label="${esc(tileAria(sid))}">${tileInner(sid)}</button>`;
+}
+function patchTile(sid) {
+  const el = $(`.tile[data-sid="${CSS.escape(sid)}"]`, $('#board'));
+  if (!el) return;
+  const sig = tileSig(sid);
+  if (el.dataset.sig === sig) return;
+  el.dataset.sig = sig;
+  el.dataset.g = gOf(sid);
+  el.setAttribute('aria-label', tileAria(sid));
+  el.innerHTML = tileInner(sid);
+  renderTableMeta(el.closest('.tbl'));
+}
+function flashTile(sid) {
+  const el = $(`.tile[data-sid="${CSS.escape(sid)}"]`, $('#board'));
+  if (!el) return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  try { navigator.vibrate && navigator.vibrate(12); } catch {}
+}
+function tableMetaHTML(t) {
+  let n1 = 0, n0 = 0, n = 0;
+  for (const g of t.groups) for (const s of g.students) { n++; const v = gOf(s.sid); if (v === 1) n1++; if (v === 0) n0++; }
+  return (n1 ? `<span class="mini m1">${n1} × 1</span>` : '') + (n0 ? `<span class="mini m0">${n0} × 0</span>` : '') + (!n1 && !n0 ? `<span class="mini" style="color:var(--muted)">${n} students</span>` : '');
+}
+function renderTableMeta(tblEl) {
+  if (!tblEl || S.editing) return;
+  const t = tablesView().find(x => x.id === tblEl.dataset.table);
+  const m = $('.tbl-meta', tblEl);
+  if (t && m) m.innerHTML = tableMetaHTML(t);
+}
+
+function renderBoard() {
+  const board = $('#board');
+  const loaded = S.mode === 'local' || (S.ready.layout && S.ready.students && (S.ready.grades || S.everLoaded));
+  if (!loaded) {
+    if (!$('.loading', board)) board.innerHTML = '<div class="loading">Loading your class…</div>';
+    S.lastStruct = '';
+    return;
+  }
+  S.everLoaded = true;
+  const view = tablesView();
+  const struct = JSON.stringify([S.editing, S.canWrite, view.map(t => [t.id, t.groups.map(g => [g.id, g.students.map(s => s.sid)])])]);
+  if (struct === S.lastStruct) {
+    for (const sid of S.students.keys()) patchTile(sid);
+    $$('.tbl', board).forEach(renderTableMeta);
+    return;
+  }
+  S.lastStruct = struct;
+  board.classList.toggle('editing', S.editing);
+  if (!view.length) {
+    board.innerHTML = `<div class="state">
+      <h2>Set up your tables</h2>
+      <p>Each table shows its groups with a photo tile per student. Import your class list (ID, name, table, group, photo path) once; the app keeps it on this device. Then add photos from Photos.</p>
+      <div class="btns">
+        ${S.canWrite ? `<label class="btn primary file">Import class list (CSV)…<input type="file" data-csv accept=".csv,text/csv,text/plain"></label>
+        <button class="btn" type="button" data-act="roster">Other options</button>
+        <button class="btn" type="button" data-act="starter">Start with 3 empty tables</button>` : '<p class="hint">No students have been added yet.</p>'}
+      </div></div>`;
+    return;
+  }
+  const html = view.map(t => {
+    if (t.unassigned) {
+      const list = t.groups[0].students;
+      const add = S.editing && S.canWrite ? `<button type="button" class="add-tile" data-add="|"><b>+</b>Add student</button>` : '';
+      return `<section class="tbl tbl-un" data-table=""><header class="tbl-h"><h2 class="tbl-n">Unassigned</h2><div class="tbl-meta">${list.length ? tableMetaHTML(t) : ''}</div></header><div class="grp nolabel"><div class="tiles">${list.map(s => tileHTML(s.sid)).join('')}${add}</div></div>${!list.length ? '<p class="hint" style="padding:0 0 8px">Students without a table show up here.</p>' : ''}</section>`;
+    }
+    const groups = t.groups.map(g => {
+      const tiles = g.students.map(s => tileHTML(s.sid)).join('');
+      const add = (S.editing || !g.students.length) && S.canWrite
+        ? `<button type="button" class="add-tile" data-add="${esc(t.id)}|${esc(g.id)}"><b>+</b>Add student</button>` : '';
+      const del = S.editing && !g.students.length ? `<button type="button" class="btn small quiet" data-delgroup="${esc(t.id)}|${esc(g.id)}" aria-label="Remove group ${esc(g.id)}">×</button>` : '';
+      return `<div class="grp"><div class="grp-l">${esc(g.id)}${del}</div><div class="tiles">${tiles}${add}</div></div>`;
+    }).join('');
+    const tools = S.editing
+      ? `<div class="tbl-tools"><button type="button" class="btn small" data-addgroup="${esc(t.id)}">+ Group</button>${t.groups.every(g => !g.students.length) ? `<button type="button" class="btn small danger" data-deltable="${esc(t.id)}">Remove</button>` : ''}</div>`
+      : `<div class="tbl-meta">${tableMetaHTML(t)}</div>`;
+    return `<section class="tbl" data-table="${esc(t.id)}"><header class="tbl-h"><h2 class="tbl-n">Table <b>${esc(t.id)}</b></h2>${tools}</header>${groups || '<p class="hint" style="padding:8px 0">No groups yet.</p>'}</section>`;
+  }).join('') + (S.editing ? `<button type="button" class="add-tile add-table" data-act="addtable"><b>+</b>Add a table</button>` : '');
+  board.innerHTML = html;
+}
+
+function renderBanners() {
+  const host = $('#banners');
+  const parts = [];
+  const samples = [...S.students.values()].filter(s => s.ex).length;
+  if (samples && S.canWrite) parts.push(`<div class="banner"><p><b>${samples} sample students</b> are on the board so you can try the markers. Import your roster to replace them.</p><button class="btn small primary" type="button" data-act="roster">Import roster</button><button class="btn small" type="button" data-act="clearsamples">Remove samples</button></div>`);
+  if (!S.canWrite && S.mode === 'db') parts.push(`<div class="banner"><p>You can view this board, but only the owner and editors can change grades.</p></div>`);
+  const html = parts.join('');
+  if (host.innerHTML !== html) host.innerHTML = html;
+}
+function renderModeBar() {
+  const host = $('#modeBar');
+  let html = '';
+  if (S.armed) {
+    const chip = $(`#rubric [data-k="${S.armed}"]`);
+    const label = S.armed.startsWith('G') ? GRADE_LABEL[S.armed] : KW[S.armed].short;
+    html = `<div class="bar"><span class="chip ${chip ? esc(chip.className.replace(/\b(armed|lifted)\b/g, '')) : ''}">${esc(label)}</span><p>Tap students to stamp. Tap again to remove.</p><button class="btn small" type="button" data-act="disarm">Done</button></div>`;
+  } else if (S.editing) {
+    html = `<div class="bar"><p>Editing tables: add students with +, tap a student to rename, move or remove.</p><button class="btn small" type="button" data-act="doneedit">Done</button></div>`;
+  }
+  if (host.innerHTML !== html) host.innerHTML = html;
+}
+function renderTally() {
+  let c = [0, 0, 0];
+  for (const sid of S.students.keys()) c[gOf(sid)]++;
+  const html = S.students.size
+    ? `<span class="pill p2" title="2 points"><i></i>${c[2]}</span><span class="pill p1" title="1 point"><i></i>${c[1]}</span><span class="pill p0" title="0 points"><i></i>${c[0]}</span>`
+    : '';
+  const el = $('#tally');
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
+function renderWeekSelect() {
+  const sel = $('#wkSel');
+  let html = '';
+  for (let w = 1; w <= Math.max(maxWeek(), S.week); w++) {
+    const m = S.weeks.get(w);
+    const tw = topicFor(w);
+    html += `<option value="${w}"${w === S.week ? ' selected' : ''}>Week ${w}${tw ? ' · ' + esc(tw) : ''}${m ? ' ✓' : ''}</option>`;
+  }
+  if (sel.dataset.h !== html) { sel.innerHTML = html; sel.dataset.h = html; }
+  sel.value = String(S.week);
+  const m = S.weeks.get(S.week);
+  const ta = $('#wkTA'), tp = $('#wkTopic');
+  if (document.activeElement !== ta && !Q.timers.has(PATH.week(S.week))) ta.value = m ? (m.ta || '') : lsGet('pboard-ta', '');
+  if (document.activeElement !== tp && !Q.timers.has(PATH.week(S.week))) tp.value = topicFor(S.week);
+  ta.disabled = tp.disabled = !S.canWrite;
+  $('#wkPrev').disabled = S.week <= 1;
+  $('#wkNext').disabled = S.week >= maxWeek();
+}
+
+/* ================= toast ================= */
+let toastTimer = 0, toastAction = null;
+function toast(msg, btn, action) {
+  const el = $('#toast');
+  $('#toastMsg').textContent = msg;
+  const b = $('#toastBtn');
+  b.hidden = !btn; b.textContent = btn || '';
+  toastAction = action || null;
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; toastAction = null; }, btn ? 5000 : 3500);
+}
+$('#toastBtn').addEventListener('click', () => { const a = toastAction; toastAction = null; $('#toast').hidden = true; if (a) a(); });
+
+/* ================= drag & tap markers ================= */
+let drag = null;
+const ghost = $('#ghost');
+function chipLabelHTML(chip) {
+  const s = $('.lbl-s', chip), f = $('.lbl-f', chip), dot = $('.dot', chip);
+  const text = narrow() ? (s ? s.textContent : chip.textContent) : (f ? f.textContent : chip.textContent);
+  return (dot ? '<i class="dot"></i>' : '') + `<span>${esc(text)}</span>`;
+}
+function onChipDown(e) {
+  if (!S.canWrite) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const chip = e.currentTarget;
+  drag = {key:chip.dataset.k, chip, id:e.pointerId, x0:e.clientX, y0:e.clientY, x:e.clientX, y:e.clientY, active:false, hot:null, type:e.pointerType, outTop:false, outBottom:false};
+}
+function startDrag() {
+  drag.active = true;
+  ghost.className = drag.chip.className.replace(/\b(armed|lifted)\b/g, '') + ' ghost';
+  ghost.innerHTML = chipLabelHTML(drag.chip);
+  ghost.hidden = false;
+  drag.w = ghost.offsetWidth; drag.h = ghost.offsetHeight;
+  drag.chip.classList.add('lifted');
+  document.body.classList.add('dragging');
+  requestAnimationFrame(autoScroll);
+}
+function placeGhost() {
+  const off = drag.type === 'mouse' ? 14 : drag.h + 26;
+  const x = Math.max(4, Math.min(window.innerWidth - drag.w - 4, drag.x - drag.w / 2));
+  ghost.style.transform = `translate(${x}px, ${drag.y - off}px) scale(1.04)`;
+}
+function hitTest() {
+  const el = document.elementFromPoint(drag.x, drag.y);
+  const tile = el && el.closest ? el.closest('.tile[data-sid]') : null;
+  if (tile !== drag.hot) {
+    if (drag.hot) drag.hot.classList.remove('hot');
+    drag.hot = tile;
+    if (tile) tile.classList.add('hot');
+  }
+}
+function edges() {
+  const top = 84;
+  const bottom = narrow() ? $('#rubric').getBoundingClientRect().top : window.innerHeight;
+  return {top, bottom, bottomZone:bottom - 84};
+}
+function autoScroll() {
+  if (!drag || !drag.active) return;
+  const e = edges();
+  if (drag.y > e.top + 10) drag.outTop = true;
+  if (drag.y < e.bottomZone - 10) drag.outBottom = true;
+  let v = 0;
+  if (drag.outTop && drag.y < e.top) v = -Math.ceil((e.top - drag.y) / 5 + 3);
+  else if (drag.outBottom && drag.y > e.bottomZone && drag.y < e.bottom + 40) v = Math.ceil((drag.y - e.bottomZone) / 5 + 3);
+  if (v) { window.scrollBy(0, v); hitTest(); }
+  requestAnimationFrame(autoScroll);
+}
+function endDrag(commit) {
+  const d = drag; drag = null;
+  if (!d) return;
+  if (d.active) {
+    ghost.hidden = true;
+    d.chip.classList.remove('lifted');
+    document.body.classList.remove('dragging');
+    if (d.hot) d.hot.classList.remove('hot');
+    if (commit && d.hot) applyKey(d.hot.dataset.sid, d.key, false);
+  } else if (commit) {
+    tapChip(d.key);
+  }
+}
+document.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (!drag.active) {
+    if (Math.hypot(drag.x - drag.x0, drag.y - drag.y0) < 8) return;
+    startDrag();
+  }
+  e.preventDefault();
+  placeGhost();
+  hitTest();
+}, {passive:false});
+document.addEventListener('pointerup', e => { if (drag && e.pointerId === drag.id) endDrag(true); });
+document.addEventListener('pointercancel', e => { if (drag && e.pointerId === drag.id) endDrag(false); });
+window.addEventListener('blur', () => { if (drag) endDrag(false); });
+
+function tapChip(key) {
+  if (!S.canWrite) return;
+  S.armed = S.armed === key ? null : key;
+  $$('#rubric [data-k]').forEach(c => c.classList.toggle('armed', c.dataset.k === S.armed));
+  renderModeBar();
+}
+function disarm() { if (S.armed) tapChip(S.armed); }
+function bindChip(chip) {
+  if (chip.dataset.bound) return;
+  chip.dataset.bound = '1';
+  chip.addEventListener('pointerdown', onChipDown);
+  chip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapChip(chip.dataset.k); } });
+  chip.addEventListener('contextmenu', e => e.preventDefault());
+  chip.addEventListener('dragstart', e => e.preventDefault());
+  const f = $('.lbl-f', chip);
+  if (f) chip.title = f.textContent;
+}
+$$('#rubric [data-k]').forEach(bindChip);
+function renderRubric() {
+  const L = S.settings.levels;
+  $('#rbH1').textContent = `${L[1].name} · 1 pt`;
+  $('#rbH0').textContent = `${L[0].name} · 0 pt`;
+  for (const lvl of [1, 0]) {
+    const box = $('#rbChips' + lvl);
+    $$('.chip:not(.G1):not(.G0)', box).forEach(c => c.remove());
+    box.insertAdjacentHTML('beforeend', activeReasons(lvl).map(r =>
+      `<div class="chip ${lvl === 1 ? 'y' : 'r'}" role="button" tabindex="0" data-k="${esc(r.key)}"><i class="dot"></i><span class="lbl-s">${esc(r.short)}</span><span class="lbl-f">${esc(r.full)}</span></div>`).join(''));
+    $$('.chip', box).forEach(bindChip);
+  }
+  const notes = S.settings.notes.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  $('#rbRef').innerHTML = [2, 1, 0].map(p => `<p><b>${p} pt${p === 2 ? 's' : ''} · ${esc(L[p].name)}:</b> ${esc(L[p].desc)}</p>`).join('') + notes.map(x => `<p>${esc(x)}</p>`).join('');
+  if (S.armed && !S.armed.startsWith('G') && !(KW[S.armed] && !KW[S.armed].archived)) S.armed = null;
+  $$('#rubric [data-k]').forEach(c => c.classList.toggle('armed', c.dataset.k === S.armed));
+}
+function applySettings() {
+  KW = {};
+  for (const r of S.settings.reasons) KW[r.key] = r;
+  KW_KEYS = S.settings.reasons.map(r => r.key);
+  document.title = S.settings.title;
+  $('#brandTitle').textContent = S.settings.title;
+  renderRubric();
+}
+
+/* ================= board clicks ================= */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const act = t.closest && t.closest('[data-act]');
+  if (act) { handleAct(act.dataset.act); return; }
+  if (!t.closest || !t.closest('#board')) return;
+  const tile = t.closest('.tile[data-sid]');
+  if (tile) {
+    if (S.armed) applyKey(tile.dataset.sid, S.armed, true);
+    else openStudent(tile.dataset.sid);
+    return;
+  }
+  const add = t.closest('[data-add]');
+  if (add) { const [tb, gr] = add.dataset.add.split('|'); openAdd(tb, gr); return; }
+  const ag = t.closest('[data-addgroup]');
+  if (ag) { addGroup(ag.dataset.addgroup); return; }
+  const dg = t.closest('[data-delgroup]');
+  if (dg) { const [tb, gr] = dg.dataset.delgroup.split('|'); removeGroup(tb, gr); return; }
+  const dt = t.closest('[data-deltable]');
+  if (dt) { removeTable(dt.dataset.deltable); return; }
+});
+function handleAct(a) {
+  if (a === 'roster') openRoster();
+  else if (a === 'starter') starterLayout();
+  else if (a === 'clearsamples') clearSamples();
+  else if (a === 'disarm') disarm();
+  else if (a === 'doneedit') { S.editing = false; renderAll(); }
+  else if (a === 'addtable') addTable();
+}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (S.sheet) closeSheet();
+  else if (S.armed) disarm();
+  else if (S.editing) { S.editing = false; renderAll(); }
+});
+
+/* ================= layout editing ================= */
+function currentLayout() { return layoutFromView(tablesView()); }
+function starterLayout() {
+  if (!S.canWrite) return;
+  saveLayout({tables:['1','2','3'].map(id => ({id, groups:[...GROUPS_DEFAULT]}))});
+  S.editing = true;
+  renderAll();
+}
+function addTable() {
+  const L = currentLayout();
+  const nums = L.tables.map(t => parseInt(t.id, 10)).filter(n => !isNaN(n));
+  const id = String((nums.length ? Math.max(...nums) : 0) + 1);
+  L.tables.push({id, groups:[...GROUPS_DEFAULT]});
+  saveLayout(L); renderAll();
+}
+function addGroup(tid) {
+  const L = currentLayout();
+  const t = L.tables.find(x => x.id === tid); if (!t) return;
+  let c = 'a';
+  while (t.groups.includes(c)) c = String.fromCharCode(c.charCodeAt(0) + 1);
+  t.groups.push(c);
+  saveLayout(L); renderAll();
+}
+function removeGroup(tid, gid) {
+  const L = currentLayout();
+  const t = L.tables.find(x => x.id === tid); if (!t) return;
+  t.groups = t.groups.filter(g => g !== gid);
+  saveLayout(L); renderAll();
+}
+function removeTable(tid) {
+  const L = currentLayout();
+  L.tables = L.tables.filter(t => t.id !== tid);
+  saveLayout(L); renderAll();
+}
+function nextOrder(tid, gid) {
+  let m = -1;
+  for (const s of S.students.values()) if (String(s.table || '') === tid && String(s.group || '') === gid) m = Math.max(m, s.order ?? 0);
+  return m + 1;
+}
+function putStudent(sid, st, delay = 0) { S.students.set(sid, st); persist(PATH.student(sid), st, delay); }
+
+/* ================= sheets ================= */
+function openSheet(kind, html, extra) {
+  closeSheet();
+  S.sheet = {kind, ...(extra || {})};
+  const host = $('#sheetHost');
+  host.innerHTML = `<div class="sheet-wrap"><div class="scrim" data-close></div><div class="sheet" role="dialog" aria-modal="true">${html}<button class="icon sh-x" type="button" data-close aria-label="Close">×</button></div></div>`;
+  $$('[data-close]', host).forEach(b => b.addEventListener('click', () => closeSheet()));
+  document.documentElement.style.overflow = 'hidden';
+  return $('.sheet', host);
+}
+function closeSheet() {
+  if (!S.sheet) return;
+  const s = S.sheet; S.sheet = null;
+  if (s.onClose) s.onClose();
+  $('#sheetHost').innerHTML = '';
+  document.documentElement.style.overflow = '';
+}
+
+/* ----- student sheet ----- */
+function openStudent(sid) {
+  const st = S.students.get(sid); if (!st) return;
+  const ro = !S.canWrite;
+  const tables = currentLayout().tables;
+  const LV = S.settings.levels;
+  const recReasons = (recOf(sid) || {}).reasons || [];
+  const reasonsFor = lvl => S.settings.reasons.filter(r => r.lvl === lvl && (!r.archived || recReasons.includes(r.key)));
+  const unknown = recReasons.filter(k => !KW[k]);
+  const kwBtn = r => `<button type="button" class="kwb ${r.lvl === 1 ? 'y' : 'r'}" data-kw="${esc(r.key)}" aria-pressed="false"${ro ? ' disabled' : ''}><span class="box">${ICON_CHECK}</span><span>${esc(r.full)}</span><span class="lv">${r.lvl} pt</span></button>`;
+  const sh = openSheet('student', `
+    <div class="sh-head">
+      <div class="sh-photo">
+        <div class="ph" id="stPh" style="--hue:${hue(st.name)}"></div>
+        ${ro ? '' : `<label class="btn small file" id="stPhLabel"><span id="stPhText">${hasPhoto(sid) ? 'Change photo' : 'Add photo'}</span><input type="file" accept="image/*" id="stPhInput"></label>
+        <button class="btn small quiet" type="button" id="stPhRemove"${S.thumbs.has(sid) || st.photoFile ? '' : ' hidden'}>Remove photo</button>
+        ${st.photoPath ? `<p class="hint" style="overflow-wrap:anywhere">Photo file: <code>${esc(cleanPhotoPath(st.photoPath))}</code></p>` : ''}`}
+      </div>
+      <div class="sh-id">
+        <label class="fv"><span>Name</span><input id="stName" value="${esc(st.name)}" autocomplete="off"${ro ? ' disabled' : ''}></label>
+        ${st.studentId ? `<span class="sid">ID ${esc(st.studentId)}</span>` : ''}
+        <div class="seat">
+          <label class="fv"><span>Table</span><select id="stTable"${ro ? ' disabled' : ''}>${tables.map(t => `<option value="${esc(t.id)}"${t.id === String(st.table || '') ? ' selected' : ''}>Table ${esc(t.id)}</option>`).join('')}<option value=""${!st.table ? ' selected' : ''}>Unassigned</option></select></label>
+          <label class="fv"><span>Group</span><select id="stGroup"${ro ? ' disabled' : ''}></select></label>
+        </div>
+      </div>
+    </div>
+    <div><h3>Week ${S.week} points</h3>
+      <div class="seg" id="stSeg">
+        <button type="button" data-g="2" aria-pressed="false"${ro ? ' disabled' : ''}>2<small>${esc(LV[2].short)}</small></button>
+        <button type="button" data-g="1" aria-pressed="false"${ro ? ' disabled' : ''}>1<small>${esc(LV[1].short)}</small></button>
+        <button type="button" data-g="0" aria-pressed="false"${ro ? ' disabled' : ''}>0<small>${esc(LV[0].short)}</small></button>
+      </div>
+    </div>
+    <div><h3>Reasons · ${esc(LV[1].name)}</h3><div class="kwl">${reasonsFor(1).map(kwBtn).join('') || '<p class="hint">No reasons set up. Add them in Settings.</p>'}</div></div>
+    <div><h3>Reasons · ${esc(LV[0].name)}</h3><div class="kwl">${reasonsFor(0).map(kwBtn).join('') || '<p class="hint">No reasons set up. Add them in Settings.</p>'}</div></div>
+    ${unknown.length ? `<div><h3>Reasons not in the current rubric</h3><div class="kwl">${unknown.map(k => `<button type="button" class="kwb r" data-kw="${esc(k)}" aria-pressed="true"${ro ? ' disabled' : ''}><span class="box">${ICON_CHECK}</span><span>${esc(k)}</span><span class="lv">tap to remove</span></button>`).join('')}</div></div>` : ''}
+    <label class="fv"><span>Optional note (goes to the Excel sheet)</span><textarea id="stNote" rows="3" placeholder="Anything the grade alone doesn't say"${ro ? ' disabled' : ''}></textarea></label>
+    <div class="sh-foot">
+      ${ro ? '<span></span>' : `<div id="stDelWrap"><button class="btn danger" type="button" id="stDel">Remove student</button></div>`}
+      <button class="btn primary" type="button" data-close>Done</button>
+    </div>`, {sid});
+  const fillGroups = () => {
+    const tv = $('#stTable').value;
+    const t = tables.find(x => x.id === tv);
+    const cur = S.students.get(sid) || st;
+    const gsel = $('#stGroup');
+    if (!tv) { gsel.innerHTML = '<option value="">—</option>'; gsel.disabled = true; return; }
+    gsel.disabled = ro;
+    const gs = t && t.groups.length ? t.groups : [String(cur.group || '')];
+    gsel.innerHTML = gs.map(g => `<option value="${esc(g)}"${g === String(cur.group || '') ? ' selected' : ''}>${g ? 'Group ' + esc(g) : 'No group'}</option>`).join('');
+  };
+  fillGroups();
+  const rec = recOf(sid);
+  $('#stNote').value = rec ? rec.note || '' : '';
+  refreshStudentState();
+  renderSheetPhoto(sid);
+  if (ro) return;
+
+  $('#stName').addEventListener('input', e => {
+    const cur = S.students.get(sid); if (!cur) return;
+    const name = e.target.value.trim(); if (!name) return;
+    putStudent(sid, {...cur, name}, 700);
+    patchTile(sid);
+  });
+  const moveSeat = () => {
+    const cur = S.students.get(sid); if (!cur) return;
+    const table = $('#stTable').value, group = table ? $('#stGroup').value : '';
+    if (String(cur.table || '') === table && String(cur.group || '') === group) return;
+    putStudent(sid, {...cur, table, group, order:nextOrder(table, group)});
+    renderAll();
+  };
+  $('#stTable').addEventListener('change', () => { fillGroups(); $('#stGroup').value = $('#stGroup').options[0] ? $('#stGroup').options[0].value : ''; moveSeat(); });
+  $('#stGroup').addEventListener('change', moveSeat);
+  $('#stSeg').addEventListener('click', e => {
+    const b = e.target.closest('[data-g]'); if (!b) return;
+    const g = +b.dataset.g;
+    const r = clone(recOf(sid)) || blankRec();
+    r.reasons = r.reasons || [];
+    r.g = g; r.manual = g !== computeG(r.reasons);
+    setRec(sid, r);
+  });
+  $$('.kwb', sh).forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.kw;
+    const r = clone(recOf(sid)) || blankRec();
+    r.reasons = r.reasons || [];
+    if (r.reasons.includes(k)) {
+      r.reasons = r.reasons.filter(x => x !== k);
+      if (!r.manual) r.g = computeG(r.reasons);
+    } else {
+      r.reasons.push(k);
+      r.g = r.manual ? Math.min(r.g, KW[k] ? KW[k].lvl : 2) : computeG(r.reasons);
+    }
+    setRec(sid, r);
+  }));
+  $('#stNote').addEventListener('input', e => {
+    const r = clone(recOf(sid)) || blankRec();
+    r.note = e.target.value;
+    setRec(sid, r, 800);
+  });
+  $('#stPhInput').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    $('#stPhText').textContent = 'Saving…';
+    try { await setPhoto(sid, f); toast('Photo saved'); }
+    catch (err) { toast(photoError(err)); }
+    if (S.sheet && S.sheet.sid === sid) { $('#stPhText').textContent = 'Change photo'; renderSheetPhoto(sid); }
+  });
+  $('#stPhRemove').addEventListener('click', () => { removePhoto(sid); renderSheetPhoto(sid); });
+  const bindDel = () => $('#stDel').addEventListener('click', () => {
+    const w = $('#stDelWrap');
+    const nm = (S.students.get(sid) || st).name;
+    w.innerHTML = `<div class="confirm">Remove ${esc(nm)} from the roster? <button class="btn small danger" type="button" id="stDelYes">Remove</button><button class="btn small" type="button" id="stDelNo">Keep</button></div>`;
+    $('#stDelNo').addEventListener('click', () => { w.innerHTML = '<button class="btn danger" type="button" id="stDel">Remove student</button>'; bindDel(); });
+    $('#stDelYes').addEventListener('click', () => { deleteStudent(sid); closeSheet(); toast(`${nm} removed`); });
+  });
+  bindDel();
+}
+function renderSheetPhoto(sid) {
+  const st = S.students.get(sid); const el = $('#stPh'); if (!st || !el) return;
+  el.innerHTML = esc(initials(st.name)) + photoImg(sid, st);
+  const rm = $('#stPhRemove'); if (rm) rm.hidden = !(S.thumbs.has(sid) || st.photoFile);
+  const tx = $('#stPhText'); if (tx && tx.textContent !== 'Saving…') tx.textContent = hasPhoto(sid) ? 'Change photo' : 'Add photo';
+}
+function refreshStudentState() {
+  if (!S.sheet || S.sheet.kind !== 'student') return;
+  const r = recOf(S.sheet.sid);
+  const g = r ? r.g : 2, reasons = (r && r.reasons) || [];
+  $$('#stSeg [data-g]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.g === g)));
+  $$('.kwb').forEach(b => b.setAttribute('aria-pressed', String(reasons.includes(b.dataset.kw))));
+  const note = $('#stNote');
+  if (note && document.activeElement !== note) note.value = r ? r.note || '' : '';
+}
+function deleteStudent(sid) {
+  const st = S.students.get(sid);
+  S.students.delete(sid);
+  persist(PATH.student(sid), DEL);
+  if (S.grades.has(sid)) { S.grades.delete(sid); persist(PATH.grade(S.week, sid), DEL); }
+  thumbDel(sid);
+  renderAll();
+}
+
+/* ----- add students sheet ----- */
+function openAdd(tid, gid) {
+  const sh = openSheet('add', `
+    <h2>Add students · ${tid ? `Table ${esc(tid)}${gid ? ', group ' + esc(gid) : ''}` : 'Unassigned'}</h2>
+    <p class="hint">Type a name and press Add. The sheet stays open so you can add the whole group.</p>
+    <div class="btnrow" style="align-items:flex-end">
+      <label class="fv" style="flex:1 1 220px"><span>Student name</span><input id="addName" autocomplete="off" enterkeyhint="done"></label>
+      <button class="btn primary" type="button" id="addGo">Add</button>
+    </div>
+    <p class="hint" id="addLog"></p>
+    <div class="sh-foot"><span></span><button class="btn" type="button" data-close>Done</button></div>`, {tid, gid});
+  const inp = $('#addName');
+  const added = [];
+  const go = () => {
+    const name = inp.value.trim(); if (!name) { inp.focus(); return; }
+    const sid = newId();
+    putStudent(sid, {name, table:tid, group:gid, order:nextOrder(tid, gid)});
+    const L = currentLayout();
+    if (tid && !(S.layout && S.layout.tables.some(t => t.id === tid && t.groups.includes(gid)))) saveLayout(L);
+    added.push(name);
+    $('#addLog').textContent = 'Added: ' + added.join(', ');
+    inp.value = ''; inp.focus();
+    renderAll();
+  };
+  $('#addGo').addEventListener('click', go);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+  setTimeout(() => inp.focus(), 50);
+}
+
+/* ----- roster sheet ----- */
+function openRoster(csvFile) {
+  const view = tablesView();
+  const n = S.students.size;
+  const samples = [...S.students.values()].filter(s => s.ex).length;
+  let lastImp = null; try { lastImp = JSON.parse(lsGet(bkey('lastimport'), 'null')); } catch {}
+  const sh = openSheet('roster', `
+    <h2>Roster</h2>
+    <p class="hint">${n} student${n === 1 ? '' : 's'} at ${view.filter(t => !t.unassigned).length} table${view.filter(t => !t.unassigned).length === 1 ? '' : 's'}${view.some(t => t.unassigned && t.groups[0].students.length) ? `, ${view.find(t => t.unassigned).groups[0].students.length} unassigned` : ''}.</p>
+    <div>
+      <h3>Class list (CSV)</h3>
+      <p>One student per row: <code>ID, Name Surname, Table, Group, Photo</code>, for example <code>10001, Name Surname, 1, a, photos/10001.jpg</code>. A header row is optional, and commas or semicolons both work. Leave Table empty for students without a table; they go to Unassigned.</p>
+      <p class="hint" style="margin-top:6px">Import it once: the class stays in the app on this device and the file is never read again on its own. Grades are tied to each student's ID, so importing an updated list later keeps everyone's grades.</p>
+      <div class="btnrow" style="margin-top:10px"><label class="btn primary file">Import CSV…<input type="file" id="rCsv" accept=".csv,text/csv,text/plain"></label></div>
+      ${lastImp ? `<p class="hint" style="margin-top:6px">Last import: ${esc(lastImp.file)}, ${lastImp.count} students, ${esc(new Date(lastImp.at).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'}))}</p>` : ''}
+      <div id="rCsvPrev" style="margin-top:10px"></div>
+    </div>
+    <details class="more">
+      <summary>Other ways to add or arrange students</summary>
+      <div>
+        <div class="btnrow">
+          <button class="btn" type="button" id="rEdit">Edit tables on the board</button>
+          <button class="btn" type="button" id="rAddTable">Add a table</button>
+        </div>
+        <div>
+          <h3>Paste names</h3>
+          <p class="hint" style="margin-bottom:8px">Paste Table, Group and Name columns from Excel, or one student per line like <code>1, a, Name Surname</code>. Lines with only a name go to Unassigned. Students added this way have no ID.</p>
+          <label class="fv"><span>Names</span><textarea id="rPaste" rows="5" placeholder="1&#9;a&#9;Name Surname&#10;1&#9;b&#9;Name Surname&#10;…"></textarea></label>
+          <div class="btnrow" style="margin-top:10px">
+            <label class="btn file">Choose rubric Excel file…<input type="file" id="rFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          </div>
+        </div>
+        <div id="rPrev"></div>
+        ${samples ? `<div><button class="btn" type="button" id="rSamples">Remove ${samples} sample students</button></div>` : ''}
+      </div>
+    </details>
+    <div><h3>This week</h3><div id="rClearWrap"><button class="btn danger" type="button" id="rClear">Reset week ${S.week} to 2 pts for everyone</button></div></div>
+    <div class="sh-foot"><span></span><button class="btn primary" type="button" data-close>Done</button></div>`);
+  const sheetState = S.sheet;
+
+  /* --- CSV --- */
+  const showCsv = async f => {
+    const host = $('#rCsvPrev');
+    host.innerHTML = `<div class="preview"><p>Reading ${esc(f.name)}…</p></div>`;
+    let res;
+    try { res = mapClassRows(parseCSV(decodeText(await f.arrayBuffer()))); }
+    catch (err) { console.warn(err); res = {entries:[], dupes:[], noId:0}; }
+    if (S.sheet !== sheetState) return;
+    const entries = res.entries;
+    if (!entries.length) { host.innerHTML = `<div class="preview"><p>No students found in ${esc(f.name)}. Check that each row has a name, and save it from Excel as CSV.</p></div>`; return; }
+    const targets = entries.map(e => sidFor(e));
+    const incoming = new Set(targets.filter(Boolean));
+    const updated = targets.filter(t => t && S.students.has(t)).length;
+    const migrating = entries.filter((e, i) => !S.students.has(targets[i]) && legacyMatch(e)).length;
+    const added = entries.length - updated - migrating;
+    const notIn = [...S.students.keys()].filter(sid => !incoming.has(sid) && !entries.some(e => legacyMatch(e) === sid));
+    const seated = autoSeat(entries, new Map());
+    const tables = new Set(seated.map(e => e.table).filter(Boolean));
+    const nUn = seated.filter(e => !e.table).length;
+    const withPhoto = entries.filter(e => e.photo).length;
+    host.innerHTML = `<div class="preview">
+      <p><b>${entries.length} students</b> at ${tables.size} table${tables.size === 1 ? '' : 's'}${nUn ? ` (${nUn} unassigned)` : ''} in ${esc(f.name)}${withPhoto ? `, ${withPhoto} with a photo path` : ''}.</p>
+      <ul>${seated.slice(0, 6).map(e => `<li>${e.id ? esc(e.id) + ' · ' : ''}${esc(e.name)} · ${esc(seatName(e.table, e.group))}${e.photo ? ' · ' + esc(e.photo) : ''}</li>`).join('')}${seated.length > 6 ? `<li>… and ${seated.length - 6} more</li>` : ''}</ul>
+      ${res.dupes.length ? `<p class="hint">Skipped repeated IDs: ${esc(res.dupes.slice(0, 5).join(', '))}${res.dupes.length > 5 ? '…' : ''}</p>` : ''}
+      ${res.noId ? `<p class="hint">${res.noId} row${res.noId === 1 ? ' has' : 's have'} no ID and will be matched by name.</p>` : ''}
+      ${n ? `<p>${updated ? `${updated} already on the board will be updated` : 'None are on the board yet'}${added ? `, ${added} ${added === 1 ? 'is' : 'are'} new` : ''}.${migrating ? ` ${migrating} existing student${migrating === 1 ? '' : 's'} without an ID will be linked to their ID, keeping their grades.` : ''}</p>` : ''}
+      ${notIn.length ? `<label class="chk"><input type="checkbox" id="rCsvRemove" checked> Remove the ${notIn.length} student${notIn.length === 1 ? '' : 's'} on the board who ${notIn.length === 1 ? "isn't" : "aren't"} in this file</label><p class="hint">Their grades stay saved and come back if they're imported again.</p>` : ''}
+      <div class="btnrow"><button class="btn primary" type="button" id="rCsvGo">Import ${entries.length} students</button></div></div>`;
+    $('#rCsvGo').addEventListener('click', () => {
+      const rm = $('#rCsvRemove');
+      commitCsv(entries, rm ? rm.checked : false, f.name);
+      closeSheet();
+    });
+  };
+  $('#rCsv').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) showCsv(f); });
+  if (csvFile) showCsv(csvFile);
+
+  /* --- other ways --- */
+  $('#rEdit').addEventListener('click', () => { closeSheet(); S.editing = true; disarm(); renderAll(); });
+  $('#rAddTable').addEventListener('click', () => { closeSheet(); S.editing = true; addTable(); });
+  let parsed = [];
+  const showPrev = (entries, source) => {
+    parsed = entries;
+    const host = $('#rPrev');
+    if (!entries.length) { host.innerHTML = source ? `<div class="preview"><p>No names found in ${esc(source)}. Check that it has a Student Name column with names under it.</p></div>` : ''; return; }
+    const seated = autoSeat(entries, new Map());
+    const tables = new Set(seated.map(e => e.table).filter(Boolean));
+    host.innerHTML = `<div class="preview"><p><b>${entries.length} students</b> in ${tables.size} table${tables.size === 1 ? '' : 's'}${seated.some(e => !e.table) ? ` (${seated.filter(e => !e.table).length} unassigned)` : ''}${source ? ' from ' + esc(source) : ''}.</p>
+      <ul>${seated.slice(0, 8).map(e => `<li>${esc(seatName(e.table, e.group))} · ${esc(e.name)}</li>`).join('')}${seated.length > 8 ? `<li>… and ${seated.length - 8} more</li>` : ''}</ul>
+      <div class="btnrow"><button class="btn primary" type="button" id="rReplace">Replace roster</button>${n ? '<button class="btn" type="button" id="rAppend">Add to roster</button>' : ''}</div></div>`;
+    $('#rReplace').addEventListener('click', () => { commitRoster(parsed, true); closeSheet(); });
+    const ap = $('#rAppend'); if (ap) ap.addEventListener('click', () => { commitRoster(parsed, false); closeSheet(); });
+  };
+  let t = 0;
+  $('#rPaste').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => showPrev(parsePaste(e.target.value), ''), 250); });
+  $('#rFile').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    $('#rPrev').innerHTML = '<div class="preview"><p>Reading ' + esc(f.name) + '…</p></div>';
+    try { showPrev(await readRosterXlsx(f), f.name); }
+    catch (err) { console.warn(err); $('#rPrev').innerHTML = `<div class="preview"><p>Couldn't read ${esc(f.name)}. Save it as .xlsx and try again, or paste the columns instead.</p></div>`; }
+  });
+  const sb = $('#rSamples'); if (sb) sb.addEventListener('click', () => { clearSamples(); closeSheet(); });
+  $('#rClear').addEventListener('click', () => {
+    const w = $('#rClearWrap');
+    w.innerHTML = `<div class="confirm">Clear every grade, reason and note for week ${S.week}? <button class="btn small danger" type="button" id="rClearYes">Clear week</button><button class="btn small" type="button" id="rClearNo">Cancel</button></div>`;
+    $('#rClearNo').addEventListener('click', () => { closeSheet(); openRoster(); });
+    $('#rClearYes').addEventListener('click', () => {
+      for (const sid of [...S.grades.keys()]) { S.grades.delete(sid); persist(PATH.grade(S.week, sid), DEL); }
+      closeSheet(); renderAll(); toast(`Week ${S.week} reset`);
+    });
+  });
+}
+
+/* ----- CSV class list ----- */
+function decodeText(buf) {
+  let t;
+  try { t = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+  catch { try { t = new TextDecoder('windows-1254').decode(buf); } catch { t = new TextDecoder().decode(buf); } }
+  return t.replace(/^﻿/, '');
+}
+function parseCSV(text) {
+  const first = (text.split(/\r?\n/).find(l => l.trim()) || '');
+  const delim = ['\t', ';', ','].map(d => [d, first.split(d).length - 1]).sort((a, b) => b[1] - a[1])[0];
+  const D = delim[1] > 0 ? delim[0] : ',';
+  const rows = []; let row = [], field = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"' && field.trim() === '') { q = true; field = ''; }
+    else if (c === D) { row.push(field); field = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(field); rows.push(row); row = []; field = ''; }
+    else field += c;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows.map(r => r.map(x => x.trim())).filter(r => r.some(Boolean));
+}
+function mapClassRows(rows) {
+  const out = {entries:[], dupes:[], noId:0};
+  if (!rows.length) return out;
+  const H = rows[0].map(h => norm(h).split(' ').filter(Boolean));
+  const has = (toks, list) => toks.some(t => list.includes(t));
+  const NAME = ['name', 'names', 'ad', 'adi', 'isim', 'isim soyisim', 'adsoyad'], SUR = ['surname', 'soyad', 'soyadi', 'soyisim', 'last'];
+  const col = {id:-1, name:-1, sur:-1, table:-1, group:-1, photo:-1};
+  H.forEach((t, i) => {
+    if (col.table < 0 && has(t, ['table', 'masa'])) col.table = i;
+    else if (col.group < 0 && has(t, ['group', 'grup'])) col.group = i;
+    else if (col.photo < 0 && has(t, ['photo', 'foto', 'fotograf', 'resim', 'image', 'picture', 'path'])) col.photo = i;
+    else if (col.name < 0 && has(t, NAME)) col.name = i;
+    else if (col.sur < 0 && has(t, SUR)) col.sur = i;
+    else if (col.id < 0 && (has(t, ['id', 'numara', 'no', 'numarasi', 'sid']) || t.join(' ').includes('student number'))) col.id = i;
+  });
+  const header = col.name >= 0 && (col.table >= 0 || col.id >= 0 || col.group >= 0);
+  if (!header) Object.assign(col, {id:0, name:1, sur:-1, table:2, group:3, photo:4});
+  const seen = new Set();
+  for (const r of rows.slice(header ? 1 : 0)) {
+    const g = i => (i >= 0 && i < r.length ? String(r[i] || '').trim() : '');
+    let name = g(col.name); if (col.sur >= 0 && g(col.sur)) name = (name + ' ' + g(col.sur)).trim();
+    name = name.replace(/\s+/g, ' ');
+    if (!name || name.length > 80) continue;
+    const id = g(col.id).replace(/\.0+$/, '');
+    const table = g(col.table).replace(/\.0+$/, '').replace(/^(table|masa)\s*/i, '');
+    const group = g(col.group).replace(/^(group|grup)\s*/i, '').toLowerCase();
+    if (id) { if (seen.has(id)) { out.dupes.push(id); continue; } seen.add(id); }
+    else out.noId++;
+    out.entries.push({id, name, table, group, photo:g(col.photo)});
+  }
+  return out;
+}
+const cleanId = id => String(id || '').trim().replace(/\.0+$/, '').replace(/[^A-Za-z0-9_-]/g, '');
+function legacyMatch(e) {
+  const nn = norm(e.name);
+  for (const [sid, st] of S.students) if (!st.studentId && norm(st.name) === nn) return sid;
+  return null;
+}
+function sidFor(e) {
+  const id = cleanId(e.id);
+  if (id) return 'id-' + id;
+  const m = legacyMatch(e);
+  return m;
+}
+function migrateSid(from, to) {
+  for (const p of Object.keys(LOCAL)) {
+    if (p.startsWith('grades/') && p.endsWith('__' + from)) {
+      const v = LOCAL[p];
+      persist(p.slice(0, -from.length) + to, {...v, sid:to});
+      persist(p, DEL);
+    }
+  }
+  if (S.grades.has(from)) { S.grades.set(to, {...S.grades.get(from), sid:to}); S.grades.delete(from); }
+  if (S.thumbs.has(from)) thumbMove(from, to);
+  const cur = S.students.get(from);
+  S.students.delete(from); persist(PATH.student(from), DEL);
+  return cur;
+}
+function commitCsv(entries, removeMissing, fileName) {
+  if (!S.canWrite || !entries.length) return;
+  const seated = autoSeat(entries, new Map());
+  const keep = new Set();
+  const counters = new Map();
+  for (const e of seated) {
+    let sid = sidFor(e);
+    let cur = sid ? S.students.get(sid) : null;
+    if (sid && !cur && cleanId(e.id)) {
+      const old = legacyMatch(e);
+      if (old) cur = migrateSid(old, sid);
+    }
+    if (!sid) sid = newId();
+    if (keep.has(sid)) continue;
+    keep.add(sid);
+    const k = e.table + '|' + e.group;
+    const o = counters.get(k) || 0; counters.set(k, o + 1);
+    const st = {...(cur || {}), name:e.name, table:String(e.table), group:String(e.group), order:o};
+    delete st.ex;
+    if (cleanId(e.id)) st.studentId = String(e.id).trim().replace(/\.0+$/, '');
+    if (e.photo) st.photoPath = e.photo;
+    putStudent(sid, st);
+  }
+  if (removeMissing) for (const sid of [...S.students.keys()]) if (!keep.has(sid)) { S.students.delete(sid); persist(PATH.student(sid), DEL); }
+  const L = removeMissing ? {tables:[]} : currentLayout();
+  for (const e of seated) {
+    if (!e.table) continue;
+    let t = L.tables.find(x => x.id === String(e.table));
+    if (!t) { t = {id:String(e.table), groups:[]}; L.tables.push(t); }
+    if (!t.groups.includes(String(e.group))) t.groups.push(String(e.group));
+  }
+  L.tables.sort((a, b) => natural(a.id, b.id));
+  L.tables.forEach(t => t.groups.sort(natural));
+  saveLayout(L);
+  S.found.clear(); S.missing.clear();
+  S.editing = false; S.lastStruct = '';
+  lsSet(bkey('lastimport'), JSON.stringify({file:fileName, count:keep.size, at:new Date().toISOString()}));
+  askPersist();
+  renderAll();
+  toast(`${keep.size} students imported from ${fileName}`);
+}
+
+function parsePaste(text) {
+  const out = [];
+  for (let line of String(text || '').split(/\r?\n/)) {
+    line = line.trim(); if (!line) continue;
+    let parts = line.split('\t').map(s => s.trim());
+    if (parts.length === 1) parts = line.split(/\s*[,;]\s*/);
+    if (/^table$/i.test(parts[0]) || /student\s*name/i.test(line)) continue;
+    let table = '', group = '', name = '';
+    if (parts.length >= 3 && /^\d+$/.test(parts[0]) && /^[a-z]$/i.test(parts[1])) { table = parts[0]; group = parts[1].toLowerCase(); name = parts.slice(2).join(' '); }
+    else if (parts.length === 2 && /^\d+\s*[-/.]?\s*[a-z]$/i.test(parts[0])) { const m = parts[0].match(/^(\d+)\s*[-/.]?\s*([a-z])$/i); table = m[1]; group = m[2].toLowerCase(); name = parts[1]; }
+    else {
+      const m = line.match(/^(\d+)\s*[-/.]?\s*([a-zA-Z])[\s,;:.)\-]+(.+)$/);
+      if (m) { table = m[1]; group = m[2].toLowerCase(); name = m[3]; }
+      else name = parts.filter(Boolean).join(' ');
+    }
+    name = name.replace(/\s+/g, ' ').trim();
+    if (name && name.length <= 80) out.push({table, group, name});
+  }
+  return out;
+}
+function autoSeat(entries) {
+  // Students keep the table/group they were given; no table means Unassigned.
+  return entries.map(e => {
+    const table = String(e.table || '').trim();
+    return {...e, table, group:table ? String(e.group || '').trim().toLowerCase() : ''};
+  });
+}
+async function readRosterXlsx(file) {
+  const ExcelJS = await loadExcelJS();
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(await file.arrayBuffer());
+  let best = [];
+  for (const ws of wb.worksheets) {
+    const rows = [];
+    ws.eachRow({includeEmpty:true}, (row, i) => { rows[i - 1] = (row.values || []).slice(1); });
+    for (let i = 0; i < rows.length; i++) rows[i] = rows[i] || [];
+    const got = parseRosterSheetRows(rows);
+    if (got.length > best.length) best = got;
+  }
+  return best;
+}
+function commitRoster(entries, replace) {
+  if (!S.canWrite || !entries.length) return;
+  const occupancy = new Map();
+  if (!replace) for (const s of S.students.values()) { const k = s.table + '|' + s.group; occupancy.set(k, (occupancy.get(k) || 0) + 1); }
+  const seated = autoSeat(entries, occupancy);
+  const photos = new Map();
+  if (replace) {
+    for (const [id, s] of S.students) photos.set(norm(s.name), {id, file:s.photoFile, thumb:s.thumb});
+    const sampleIds = [...S.students.entries()].filter(([, s]) => s.ex).map(([id]) => id);
+    for (const id of [...S.students.keys()]) persist(PATH.student(id), DEL);
+    S.students = new Map();
+    if (sampleIds.length) deleteGradesFor(new Set(sampleIds));
+  }
+  const counters = new Map();
+  for (const e of seated) {
+    const k = e.table + '|' + e.group;
+    const base = replace ? 0 : nextOrder(e.table, e.group);
+    const o = (counters.get(k) ?? base);
+    counters.set(k, o + 1);
+    const st = {name:e.name, table:String(e.table), group:String(e.group), order:o};
+    const sidNew = newId();
+    const p = photos.get(norm(e.name));
+    if (p && !p.used) {
+      p.used = true;
+      if (p.file) st.photoFile = p.file;
+      if (p.thumb) st.thumb = p.thumb;
+      if (S.thumbs.has(p.id) && !p.thumb) thumbMove(p.id, sidNew);
+      else if (p.thumb) setThumbURL(sidNew, p.thumb);
+    }
+    putStudent(sidNew, st);
+  }
+  for (const p of photos.values()) if (!p.used && S.thumbs.has(p.id)) thumbDel(p.id);
+  const L = replace ? {tables:[]} : currentLayout();
+  for (const e of seated) {
+    if (!e.table) continue;
+    let t = L.tables.find(x => x.id === String(e.table));
+    if (!t) { t = {id:String(e.table), groups:[]}; L.tables.push(t); }
+    if (!t.groups.includes(String(e.group))) t.groups.push(String(e.group));
+  }
+  L.tables.sort((a, b) => natural(a.id, b.id));
+  L.tables.forEach(t => t.groups.sort(natural));
+  saveLayout(L);
+  S.editing = false;
+  renderAll();
+  toast(`${seated.length} students ${replace ? 'imported' : 'added'}`);
+}
+async function deleteGradesFor(sids) {
+  for (const sid of [...S.grades.keys()]) if (sids.has(sid)) { S.grades.delete(sid); persist(PATH.grade(S.week, sid), DEL); }
+  if (S.mode === 'local') {
+    for (const p of Object.keys(LOCAL)) if (p.startsWith('grades/') && LOCAL[p] && sids.has(LOCAL[p].sid)) persist(p, DEL);
+    return;
+  }
+  const weeks = new Set([...S.weeks.keys(), S.week]);
+  for (const w of weeks) {
+    try {
+      const qs = await S.db.collection('grades').where('week', '==', w).get();
+      for (const d of qs.docs) { const v = d.data(); if (v && sids.has(v.sid)) persist(PATH.grade(w, v.sid), DEL); }
+    } catch (e) { console.warn(e); }
+  }
+}
+function clearSamples() {
+  if (!S.canWrite) return;
+  const ids = [...S.students.entries()].filter(([, s]) => s.ex).map(([id]) => id);
+  for (const id of ids) { S.students.delete(id); persist(PATH.student(id), DEL); }
+  deleteGradesFor(new Set(ids));
+  renderAll();
+  toast(`${ids.length} sample students removed`);
+}
+
+/* ----- photos ----- */
+async function resizeImage(file, size, q) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej({code:'decode'}); i.src = url; });
+    const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(w, h);
+    const sx = (w - s) / 2, sy = (h - s) * 0.3;
+    const c = document.createElement('canvas');
+    c.width = c.height = Math.min(size, s);
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, sx, sy, s, s, 0, 0, c.width, c.height);
+    return await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej({code:'decode'}), 'image/jpeg', q));
+  } finally { URL.revokeObjectURL(url); }
+}
+const blobToDataURL = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(b); });
+function photoError(err) {
+  const c = err && err.code;
+  if (c === 'decode') return "That file couldn't be opened as a photo. Try a JPG or PNG.";
+  if (c === 'quota_or_state') return 'Photo storage is full. Remove some photos first.';
+  if (c === 'rate_limited') return 'Too many uploads at once. Wait a moment and try again.';
+  if (c === 'too_large') return 'That photo is too large.';
+  return "The photo couldn't be saved. Check your connection and try again.";
+}
+async function setPhoto(sid, file) {
+  const blob = await resizeImage(file, 480, 0.85);
+  if (!S.students.has(sid)) return;
+  await thumbPut(sid, blob);
+  const cur = S.students.get(sid); if (!cur) return;
+  if (file.name && !/^image\.(jpe?g|png)$/i.test(file.name)) putStudent(sid, {...cur, photoFile:file.name});
+  S.found.delete(sid); S.missing.delete(sid);
+  patchTile(sid);
+}
+function removePhoto(sid) {
+  const cur = S.students.get(sid); if (!cur) return;
+  thumbDel(sid);
+  const next = {...(S.students.get(sid) || cur)}; delete next.photoFile; delete next.thumb;
+  putStudent(sid, next);
+  S.found.delete(sid); S.missing.delete(sid);
+  patchTile(sid);
+}
+function matchStudent(fileName) {
+  const base = norm(fileName.replace(/\.[^.]+$/, ''));
+  const ft = base.split(' ').filter(Boolean);
+  const fs = [...ft].sort().join(' ');
+  let best = null, bestScore = 0, tie = false;
+  for (const [sid, st] of S.students) {
+    const sn = norm(st.name); if (!sn) continue;
+    const st_ = sn.split(' ');
+    let score = 0;
+    const pb = st.photoPath ? norm(cleanPhotoPath(st.photoPath).split('/').pop().replace(/\.[^.]+$/, '')) : '';
+    if (pb && pb === base) score = 5;
+    else if (st.studentId && norm(st.studentId) === base) score = 4;
+    else if (sn === base || [...st_].sort().join(' ') === fs) score = 3;
+    else if (st_.every(t => ft.includes(t))) score = 2;
+    else if (sn.length > 3 && (base.includes(sn) || (base.length > 3 && sn.includes(base)))) score = 1;
+    if (score > bestScore) { best = sid; bestScore = score; tie = false; }
+    else if (score && score === bestScore) tie = true;
+  }
+  return bestScore && !tie ? best : '';
+}
+function openPhotos() {
+  const withPhoto = [...S.students.keys()].filter(hasPhoto).length;
+  const without = tablesView().flatMap(t => t.groups.flatMap(g => g.students)).filter(s => !hasPhoto(s.sid));
+  const sh = openSheet('photos', `
+    <h2>Student photos</h2>
+    <p class="hint">${withPhoto} of ${S.students.size} students have a photo on this device.</p>
+    <div>
+      <p>Select all the photos in your photos folder at once. Each one is matched by the file name in your class list (like <code>10001.jpg</code>), by student ID, or by name. A small copy is kept in the app on this device; nothing is uploaded.</p>
+      <div class="btnrow" style="margin-top:10px"><label class="btn primary file">Choose photos…<input type="file" id="pFiles" accept="image/*" multiple></label></div>
+      <div id="pList" style="margin-top:10px"></div>
+    </div>
+    ${without.length && S.students.size ? `<details class="more"><summary>${without.length} student${without.length === 1 ? '' : 's'} without a photo</summary><div><ul class="missing">${without.map(s => `<li>${esc(s.name)}${s.photoPath ? ` → <code>${esc(cleanPhotoPath(s.photoPath))}</code>` : s.studentId ? ` → <code>${esc(s.studentId)}.jpg</code>` : ''}</li>`).join('')}</ul></div></details>` : ''}
+    ${FOLDER ? `<div><h3>Photos folder</h3><p class="hint">Opened as a file, the page also reads the <code>photos</code> folder next to it.</p><div class="btnrow" style="margin-top:8px"><button class="btn" type="button" id="pCheck">Check the folder</button></div><div id="pCheckOut" style="margin-top:10px"></div></div>` : ''}
+    <div class="sh-foot"><span></span><button class="btn" type="button" data-close>Done</button></div>`, {urls:[]});
+  const sheetState = S.sheet;
+  sheetState.onClose = () => sheetState.urls.forEach(u => URL.revokeObjectURL(u));
+  const pc = $('#pCheck');
+  if (pc) pc.addEventListener('click', async () => {
+    pc.disabled = true; pc.textContent = 'Checking…';
+    const ids = [...S.students.keys()].filter(sid => !S.thumbs.has(sid));
+    let i = 0;
+    const worker = async () => { while (i < ids.length) { const sid = ids[i++]; await findFolderPhoto(sid); } };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    S.lastStruct = ''; renderBoard();
+    if (S.sheet !== sheetState) return;
+    pc.disabled = false; pc.textContent = 'Check again';
+    const found = ids.filter(sid => S.found.has(sid)).length;
+    $('#pCheckOut').innerHTML = `<div class="preview"><p><b>${found} found</b> in the photos folder.</p></div>`;
+  });
+  const opts = sel => '<option value="">Skip this photo</option>' + tablesView().map(t => t.groups.map(g => g.students.map(s =>
+    `<option value="${esc(s.sid)}"${s.sid === sel ? ' selected' : ''}>${esc(s.name)}${s.studentId ? ' · ' + esc(s.studentId) : ''} · ${t.unassigned ? 'Unassigned' : 'T' + esc(t.id) + esc(g.id)}</option>`).join('')).join('')).join('');
+  $('#pFiles').addEventListener('change', e => {
+    const files = [...(e.target.files || [])]; e.target.value = '';
+    if (!files.length) return;
+    const rows = files.map((f, i) => { const u = URL.createObjectURL(f); sheetState.urls.push(u); return {f, u, sid:matchStudent(f.name), i}; });
+    const matched = rows.filter(r => r.sid).length;
+    rows.sort((a, b) => (!!a.sid - !!b.sid));
+    $('#pList').innerHTML = `<div class="preview">
+      <p><b>${matched} of ${rows.length}</b> photos matched a student.${matched < rows.length ? ' Unmatched ones are listed first; pick the student or leave them skipped.' : ''}</p>
+      <div class="matches">${rows.map(r => `<div class="match"><img src="${esc(r.u)}" alt=""><div style="min-width:0"><div class="fn">${esc(r.f.name)}</div><select data-i="${r.i}" aria-label="Student for ${esc(r.f.name)}">${opts(r.sid)}</select></div></div>`).join('')}</div>
+      <div class="progress" hidden id="pProg"><i></i></div>
+      <div class="btnrow"><button class="btn primary" type="button" id="pSave">Save photos</button></div></div>`;
+    $('#pSave').addEventListener('click', async () => {
+      const jobs = rows.map(r => ({...r, sid:$(`select[data-i="${r.i}"]`).value})).filter(r => r.sid);
+      if (!jobs.length) { toast('Choose a student for at least one photo'); return; }
+      const btn = $('#pSave'); btn.disabled = true;
+      const prog = $('#pProg'); prog.hidden = false;
+      let ok = 0, fail = 0;
+      for (let k = 0; k < jobs.length; k++) {
+        btn.textContent = `Saving ${k + 1} of ${jobs.length}…`;
+        try { await setPhoto(jobs[k].sid, jobs[k].f); ok++; } catch (err) { fail++; console.warn(err); }
+        $('i', prog).style.width = `${Math.round((k + 1) / jobs.length * 100)}%`;
+      }
+      askPersist();
+      closeSheet();
+      toast(fail ? `${ok} photos saved, ${fail} failed` : `${ok} photos saved`);
+    });
+  });
+}
+
+/* ----- export ----- */
+let xlPromise = null;
+function loadExcelJS() {
+  if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
+  if (!xlPromise) xlPromise = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = 'exceljs.min.js';
+    sc.onload = () => window.ExcelJS ? res(window.ExcelJS) : rej(new Error('ExcelJS missing'));
+    sc.onerror = () => { xlPromise = null; rej(new Error('ExcelJS failed to load')); };
+    document.head.appendChild(sc);
+  });
+  return xlPromise;
+}
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+/* Phones and tablets: hand the file to the Share sheet (Save to Files, Drive, Mail…) from a tap.
+   Computers without file sharing: download straight away. */
+function offerFile(host, filename, blob, onSaved) {
+  let file = null, canShare = false;
+  try { file = new File([blob], filename, {type:blob.type}); canShare = !!(navigator.canShare && navigator.canShare({files:[file]})); } catch {}
+  if (!canShare) {
+    downloadBlob(filename, blob);
+    if (onSaved) onSaved();
+    host.innerHTML = `<div class="ready"><p>Saved <b>${esc(filename)}</b> to your downloads.</p><div class="btnrow"><button class="btn small" type="button" data-dl>Download again</button></div></div>`;
+  } else {
+    host.innerHTML = `<div class="ready"><p><b>${esc(filename)}</b> is ready.</p><div class="btnrow"><button class="btn primary" type="button" data-share>Save or share…</button><button class="btn" type="button" data-dl>Download</button></div><p class="hint">Save or share opens the menu with Save to Files, Google Drive, Mail and more.</p></div>`;
+    $('[data-share]', host).addEventListener('click', async () => {
+      try { await navigator.share({files:[file], title:filename}); if (onSaved) onSaved(); }
+      catch (e) { if (!e || e.name !== 'AbortError') toast("Sharing didn't work here. Use Download instead."); }
+    });
+  }
+  $('[data-dl]', host).addEventListener('click', () => { downloadBlob(filename, blob); if (onSaved) onSaved(); });
+}
+function askPersist() { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch {} }
+const blobFromURL = async u => (await fetch(u)).blob();
+async function gatherWeeks(all) {
+  let nums = [S.week];
+  if (all) {
+    const set = new Set(S.weeks.keys());
+    if (S.grades.size) set.add(S.week);
+    nums = [...set].sort((a, b) => a - b);
+    if (!nums.length) nums = [S.week];
+  }
+  const out = [];
+  for (const w of nums) {
+    let grades = {};
+    if (w === S.week) grades = Object.fromEntries(S.grades);
+    else if (S.mode === 'db') {
+      const qs = await S.db.collection('grades').where('week', '==', w).get();
+      for (const d of qs.docs) { const v = d.data(); if (v && v.sid) grades[v.sid] = v; }
+    } else {
+      for (const [p, v] of Object.entries(LOCAL)) if (p.startsWith(`grades/w${w}__`) && v && v.sid) grades[v.sid] = v;
+    }
+    const m = S.weeks.get(w) || {};
+    out.push({num:w, ta:w === S.week ? $('#wkTA').value.trim() : (m.ta || ''), topic:w === S.week ? ($('#wkTopic').value.trim() || topicFor(w)) : topicFor(w), grades});
+  }
+  return out;
+}
+function openExport() {
+  const started = [...new Set([...S.weeks.keys(), ...(S.grades.size ? [S.week] : [])])].sort((a, b) => a - b);
+  const last = lsGet(bkey('lastbackup'), '');
+  const lastTxt = last ? new Date(last).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'}) : 'never';
+  const nThumbs = S.thumbs.size;
+  const sh = openSheet('export', `
+    <h2>Export · ${esc(S.settings.title)}</h2>
+    <div>
+      <h3>Excel</h3>
+      <p>One tab per week with Table, Group, Student Name, <b>Assign 1 or 0 pts</b> (blank means 2), the reasons in TA Notes and your notes in the last column. The rubric wording comes from Settings. "All weeks" adds a Summary tab with student IDs, points per week and totals.</p>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn primary" type="button" id="xWeek">Week ${S.week} only</button>
+        <button class="btn" type="button" id="xAll">All weeks + summary${started.length ? ` (${started.length})` : ''}</button>
+      </div>
+      <div id="xOut" role="status" style="margin-top:10px"></div>
+    </div>
+    <div>
+      <h3>Backup</h3>
+      <p>Grades are kept in the app on this device. A backup holds this board only. Save one after class, and load it on another device to carry on there.</p>
+      ${nThumbs ? `<label class="chk"><input type="checkbox" id="bPhotos"> Include the ${nThumbs} photo${nThumbs === 1 ? '' : 's'} (bigger file)</label>` : ''}
+      <div class="btnrow" style="margin-top:6px">
+        <button class="btn" type="button" id="bSave">Save backup</button>
+        <label class="btn file">Load backup…<input type="file" id="bFile" accept=".json,application/json"></label>
+      </div>
+      <p class="hint" id="bLast" style="margin-top:6px">Last backup: ${esc(lastTxt)}</p>
+      <div id="bStatus" role="status" style="margin-top:6px"></div>
+    </div>
+    <div class="sh-foot"><span></span><button class="btn" type="button" data-close>Done</button></div>`);
+  const run = async all => {
+    const out = $('#xOut');
+    if (!S.students.size) { out.innerHTML = '<p class="hint">Add students first, then export.</p>'; return; }
+    $('#xWeek').disabled = $('#xAll').disabled = true;
+    out.innerHTML = '<p class="hint">Building the workbook…</p>';
+    try {
+      const ExcelJS = await loadExcelJS();
+      const weeks = await gatherWeeks(all);
+      const tables = tablesView().map(t => ({id:t.id, unassigned:!!t.unassigned, groups:t.groups.map(g => ({id:g.id, students:g.students.map(s => ({sid:s.sid, name:s.name, studentId:s.studentId || ''}))}))}));
+      const st = S.settings;
+      const wb = buildRubricWorkbook(ExcelJS, {title:st.title, levels:st.levels, notes:st.notes, keywords:st.reasons.map(r => ({key:r.key, lvl:r.lvl, full:r.full, archived:!!r.archived})), tables, weeks, summary:all});
+      const buf = await wb.xlsx.writeBuffer();
+      const filename = all ? `${slug(S.settings.title)}_All_Weeks.xlsx` : `${slug(S.settings.title)}_Week${S.week}.xlsx`;
+      if (!$('#xOut')) return;
+      offerFile($('#xOut'), filename, new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    } catch (e) {
+      console.warn(e);
+      if ($('#xOut')) $('#xOut').innerHTML = `<p class="hint">${/ExcelJS/.test((e && e.message) || '') ? "The Excel part of the app didn't load. Open the app once while online, then try again." : "The workbook couldn't be built. Close and reopen the app, then try again."}</p>`;
+    } finally {
+      const a = $('#xWeek'), b = $('#xAll'); if (a) a.disabled = false; if (b) b.disabled = false;
+    }
+  };
+  $('#xWeek').addEventListener('click', () => run(false));
+  $('#xAll').addEventListener('click', () => run(true));
+  $('#bSave').addEventListener('click', async () => {
+    const out = $('#bStatus');
+    out.innerHTML = '<p class="hint">Preparing the backup…</p>';
+    try {
+      const data = {app:APP_ID, version:1, savedAt:new Date().toISOString(), paths:LOCAL};
+      const cb = $('#bPhotos');
+      if (cb && cb.checked) {
+        data.photos = {};
+        for (const [sid, u] of S.thumbs) {
+          if (u.startsWith('data:')) continue;
+          try { data.photos[sid] = await blobToDataURL(await blobFromURL(u)); } catch {}
+        }
+      }
+      const d = new Date();
+      const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      offerFile(out, `${slug(S.settings.title)}_Backup_${stamp}.json`, new Blob([JSON.stringify(data)], {type:'application/json'}), () => {
+        lsSet(bkey('lastbackup'), data.savedAt);
+        const bl = $('#bLast'); if (bl) bl.textContent = 'Last backup: ' + new Date(data.savedAt).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
+      });
+    } catch (e) { console.warn(e); out.innerHTML = "<p class=\"hint\">The backup couldn't be prepared. Try again.</p>"; }
+  });
+  $('#bFile').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    const out = $('#bStatus');
+    let data;
+    try { data = JSON.parse(await f.text()); } catch { data = null; }
+    if (!isBoardFile(data)) {
+      out.innerHTML = `<p class="hint">${esc(f.name)} isn't a backup from this board.</p>`; return;
+    }
+    if (isSettingsOnly(data)) {
+      saveSettings(data.paths[SETTINGS_PATH]);
+      out.innerHTML = `<p class="hint">Settings loaded from ${esc(f.name)}. Students and grades were not changed.</p>`;
+      return;
+    }
+    const nSt = Object.keys(data.paths).filter(p => p.startsWith('students/')).length;
+    const when = data.savedAt ? new Date(data.savedAt).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'}) : 'an unknown date';
+    out.innerHTML = `<div class="confirm">Replace everything in the board “${esc(S.settings.title)}” with the backup from ${esc(when)} (${nSt} students)? Other boards are not affected. <button class="btn small danger" type="button" id="bYes">Replace</button><button class="btn small" type="button" id="bNo">Cancel</button></div>`;
+    $('#bNo').addEventListener('click', () => { out.innerHTML = '<p class="hint">Nothing changed.</p>'; });
+    $('#bYes').addEventListener('click', async () => {
+      out.innerHTML = '<p class="hint">Restoring…</p>';
+      const keepSettings = data.paths[SETTINGS_PATH] ? null : clone(LOCAL[SETTINGS_PATH] || null);
+      LOCAL = clone(data.paths);
+      if (keepSettings) LOCAL[SETTINGS_PATH] = keepSettings;
+      try { localStorage.setItem(dataKey(), JSON.stringify(LOCAL)); S.localOk = true; } catch { S.localOk = false; }
+      if (data.photos) for (const [sid, u] of Object.entries(data.photos)) { try { await thumbPut(sid, await blobFromURL(u)); } catch {} }
+      S.found.clear(); S.missing.clear();
+      hydrateLocal();
+      S.lastStruct = '';
+      askPersist();
+      closeSheet();
+      renderAll();
+      toast(`Backup restored: ${nSt} students`);
+    });
+  });
+}
+
+/* ================= boards (course / section / semester) ================= */
+function syncBoardTitle() {
+  const list = readBoards();
+  const b = list.find(x => x.id === S.board);
+  if (!b) list.push({id:S.board, title:S.settings.title});
+  else if (b.title !== S.settings.title) b.title = S.settings.title;
+  writeBoards(list);
+}
+function boardSummary(id) {
+  const d = id === S.board ? LOCAL : boardData(id);
+  return {title:mergeSettings(d[SETTINGS_PATH]).title, n:Object.keys(d).filter(p => p.startsWith('students/')).length};
+}
+function saveLocalNow() {
+  clearTimeout(saveLocalSoon.t);
+  try { localStorage.setItem(dataKey(), JSON.stringify(LOCAL)); S.localOk = true; } catch { S.localOk = false; }
+}
+async function switchBoard(id, skipSave) {
+  if (!skipSave) saveLocalNow();
+  disarm();
+  closeSheet();
+  S.board = id; lsSet(CUR_KEY, id);
+  S.editing = false;
+  for (const u of S.thumbs.values()) if (u.startsWith('blob:')) URL.revokeObjectURL(u);
+  S.thumbs = new Map(); S.found.clear(); S.missing.clear();
+  const wp = parseInt(lsGet(bkey('week'), '0'), 10) || 0;
+  S.week = Math.min(52, Math.max(1, wp || 1)); S.weekFromPref = !!wp;
+  await thumbsLoad();
+  startLocal();
+  syncBoardTitle();
+  S.lastStruct = '';
+  renderAll();
+  window.scrollTo(0, 0);
+  toast(`Opened ${S.settings.title}`);
+}
+function createBoard(name, copySettings) {
+  const id = 'b' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3);
+  const st = copySettings ? clone(S.settings) : clone(DEFAULT_SETTINGS);
+  st.title = name;
+  if (copySettings) st.reasons = st.reasons.filter(r => !r.archived);
+  try { localStorage.setItem(dataKey(id), JSON.stringify({[SETTINGS_PATH]:mergeSettings(st)})); }
+  catch { toast("There's no room on this device for another board."); return; }
+  const list = readBoards(); list.push({id, title:name}); writeBoards(list);
+  switchBoard(id);
+}
+async function deleteBoard(id) {
+  const list = readBoards().filter(b => b.id !== id);
+  if (!list.length) return;
+  try { localStorage.removeItem(dataKey(id)); } catch {}
+  for (const k of ['week', 'lastimport', 'lastbackup']) { try { localStorage.removeItem(bkey(k, id)); } catch {} }
+  if (IDB.db) await new Promise(res => {
+    try {
+      const tx = IDB.db.transaction('p', 'readwrite');
+      const req = tx.objectStore('p').openCursor();
+      req.onsuccess = () => { const c = req.result; if (c) { if (ownKey(c.key, id) !== null) c.delete(); c.continue(); } };
+      tx.oncomplete = res; tx.onerror = res; tx.onabort = res;
+    } catch { res(); }
+  });
+  writeBoards(list);
+  await switchBoard(list[0].id, true);
+}
+function openBoards() {
+  saveLocalNow();
+  const list = readBoards();
+  const rows = list.map(b => {
+    const sm = boardSummary(b.id);
+    return `<button type="button" class="board-row${b.id === S.board ? ' current' : ''}" data-board="${esc(b.id)}"><span class="bt">${esc(sm.title)}</span><span class="bm">${sm.n} student${sm.n === 1 ? '' : 's'}${b.id === S.board ? ' · open now' : ''}</span></button>`;
+  }).join('');
+  openSheet('boards', `
+    <h2>Boards</h2>
+    <p class="hint">Each board has its own students, grades, photos and settings, kept separately on this device. Use one for each course, section or semester.</p>
+    <div class="boards">${rows}</div>
+    <div>
+      <h3>New board</h3>
+      <label class="fv"><span>Name</span><input id="nbName" autocomplete="off" placeholder="Course, section or semester"></label>
+      <label class="chk"><input type="checkbox" id="nbCopy" checked> Copy settings from “${esc(S.settings.title)}” (rubric, weeks, topics)</label>
+      <div class="btnrow"><button class="btn primary" type="button" id="nbGo">Create and open</button></div>
+      <p class="hint">To bring a backup in as its own board, create a new board, then use Export → Load backup in it.</p>
+    </div>
+    ${list.length > 1 ? `<div><h3>Delete this board</h3><div id="dbWrap"><button class="btn danger" type="button" id="dbDel">Delete “${esc(S.settings.title)}”…</button></div></div>` : ''}
+    <div class="sh-foot"><span></span><button class="btn" type="button" data-close>Close</button></div>`);
+  $$('.board-row').forEach(b => b.addEventListener('click', () => { const id = b.dataset.board; if (id === S.board) closeSheet(); else switchBoard(id); }));
+  const go = () => { const name = $('#nbName').value.trim(); if (!name) { $('#nbName').focus(); return; } createBoard(name, $('#nbCopy').checked); };
+  $('#nbGo').addEventListener('click', go);
+  $('#nbName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+  const del = $('#dbDel');
+  if (del) del.addEventListener('click', () => {
+    const n = S.students.size;
+    $('#dbWrap').innerHTML = `<div class="confirm">Delete “${esc(S.settings.title)}” with ${n} student${n === 1 ? '' : 's'}, its grades and photos from this device? Save a backup first if you might need it. <button class="btn small danger" type="button" id="dbYes">Delete board</button><button class="btn small" type="button" id="dbNo">Cancel</button></div>`;
+    $('#dbNo').addEventListener('click', () => openBoards());
+    $('#dbYes').addEventListener('click', () => deleteBoard(S.board));
+  });
+}
+
+/* ================= settings sheet ================= */
+const isBoardFile = d => !!(d && d.paths && typeof d.paths === 'object' && Object.keys(d.paths).length &&
+  Object.keys(d.paths).every(k => /^(meta|students|grades|weeks)\//.test(k)));
+const isSettingsOnly = d => isBoardFile(d) && Object.keys(d.paths).every(k => k === SETTINGS_PATH);
+function usedReasonKeys() {
+  const used = new Set();
+  for (const [p, v] of Object.entries(LOCAL)) if (p.startsWith('grades/') && v && Array.isArray(v.reasons)) v.reasons.forEach(k => used.add(k));
+  for (const r of S.grades.values()) (r.reasons || []).forEach(k => used.add(k));
+  return used;
+}
+function saveSettings(v) {
+  S.settings = mergeSettings(v);
+  persist(SETTINGS_PATH, S.settings);
+  applySettings();
+  syncBoardTitle();
+  if (S.week > maxWeek()) setWeek(maxWeek());
+  if (document.activeElement !== $('#wkTopic')) $('#wkTopic').value = topicFor(S.week);
+  S.lastStruct = '';
+  renderAll();
+}
+function openSettings() {
+  const st = S.settings, L = st.levels;
+  const lvlBlock = p => `<div class="lvl"><h3>${p} point${p === 1 ? '' : 's'}</h3>
+      <div class="seat"><label class="fv"><span>Name</span><input data-lv="${p}" data-f="name" value="${esc(L[p].name)}"></label>
+      <label class="fv"><span>Short label</span><input data-lv="${p}" data-f="short" value="${esc(L[p].short)}"></label></div>
+      <label class="fv"><span>Description</span><textarea rows="2" data-lv="${p}" data-f="desc">${esc(L[p].desc)}</textarea></label></div>`;
+  const reasonRow = r => `<div class="rrow" data-key="${esc(r.key)}" data-lvl="${r.lvl}">
+      <select data-f="lvl" aria-label="Points"><option value="1"${r.lvl === 1 ? ' selected' : ''}>1 pt</option><option value="0"${r.lvl === 0 ? ' selected' : ''}>0 pt</option></select>
+      <input data-f="short" placeholder="Short label" value="${esc(r.short)}" aria-label="Short label">
+      <input data-f="full" placeholder="Full text (tablet and Excel)" value="${esc(r.full)}" aria-label="Full text">
+      <button class="icon rdel" type="button" aria-label="Remove this reason">×</button></div>`;
+  openSheet('settings', `
+    <h2>Settings</h2>
+    <p class="hint">Settings stay on this device and are included in backups. Save them as a settings file to keep or to give other graders; the file has no student data.</p>
+    <div class="seat">
+      <label class="fv"><span>Board name</span><input id="sTitle" value="${esc(st.title)}" autocomplete="off"></label>
+      <label class="fv"><span>Number of weeks</span><input id="sWeeks" type="number" min="1" max="52" inputmode="numeric" value="${st.weeks}"></label>
+    </div>
+    <div><h3>Rubric levels</h3><div class="lvls">${[2, 1, 0].map(lvlBlock).join('')}</div></div>
+    <div><h3>Reasons (markers)</h3>
+      <p class="hint" style="margin-bottom:8px">Short labels show on phones; the full text shows on tablets and in Excel. Removing a reason that was already used keeps it in old grades.</p>
+      <div class="rlist" id="sReasons">${activeReasons().map(reasonRow).join('')}</div>
+      <div class="btnrow" style="margin-top:8px"><button class="btn small" type="button" id="sAdd1">+ 1 pt reason</button><button class="btn small" type="button" id="sAdd0">+ 0 pt reason</button></div>
+    </div>
+    <details class="more"><summary>Week topics</summary><div>
+      <p class="hint">Shown next to the week number and in Excel as "Week - 3 (Topic)". A topic typed on the main screen for one week takes priority over these.</p>
+      <div class="topics" id="sTopics"></div>
+    </div></details>
+    <label class="fv"><span>Notes printed under each Excel week (one per line)</span><textarea id="sNotes" rows="3">${esc(st.notes)}</textarea></label>
+    <div class="btnrow"><button class="btn primary" type="button" id="sSave">Save settings</button></div>
+    <div><h3>Settings file</h3>
+      <p class="hint">Loading a settings file replaces the board name and rubric. Students and grades stay as they are.</p>
+      <div class="btnrow" style="margin-top:8px"><button class="btn" type="button" id="sExport">Save settings file</button><label class="btn file">Load settings file…<input type="file" id="sImport" accept=".json,application/json"></label></div>
+      <div id="sOut" role="status" style="margin-top:8px"></div>
+    </div>
+    <div class="sh-foot"><span></span><button class="btn" type="button" data-close>Close</button></div>`);
+  const topicsBox = $('#sTopics');
+  const readTopics = () => {
+    const t = {...st.topics};
+    $$('[data-tw]', topicsBox).forEach(i => { const w = +i.dataset.tw; if (i.value.trim()) t[w] = i.value.trim(); else delete t[w]; });
+    return t;
+  };
+  const renderTopics = () => {
+    const cur = readTopics();
+    const n = Math.max(1, Math.min(52, parseInt($('#sWeeks').value, 10) || st.weeks));
+    topicsBox.innerHTML = Array.from({length:n}, (_, i) => `<label class="tw"><span>W${i + 1}</span><input data-tw="${i + 1}" value="${esc(cur[i + 1] || '')}" aria-label="Week ${i + 1} topic" autocomplete="off"></label>`).join('');
+  };
+  renderTopics();
+  $('#sWeeks').addEventListener('change', renderTopics);
+  const list = $('#sReasons');
+  const addRow = lvl => {
+    list.insertAdjacentHTML('beforeend', reasonRow({key:'k' + Math.random().toString(36).slice(2, 8), lvl, short:'', full:''}));
+    $('[data-f="short"]', list.lastElementChild).focus();
+  };
+  $('#sAdd1').addEventListener('click', () => addRow(1));
+  $('#sAdd0').addEventListener('click', () => addRow(0));
+  list.addEventListener('click', e => { const b = e.target.closest('.rdel'); if (b) b.closest('.rrow').remove(); });
+  list.addEventListener('change', e => { const sel = e.target.closest('[data-f="lvl"]'); if (sel) sel.closest('.rrow').dataset.lvl = sel.value; });
+  const collect = () => {
+    const levels = {};
+    for (const p of [2, 1, 0]) {
+      const v = f => $(`[data-lv="${p}"][data-f="${f}"]`).value.trim();
+      levels[p] = {name:v('name') || L[p].name, short:v('short') || v('name') || L[p].short, desc:v('desc')};
+    }
+    const rows = $$('.rrow', list).map(r => ({key:r.dataset.key, lvl:+$('[data-f="lvl"]', r).value, short:$('[data-f="short"]', r).value.trim(), full:$('[data-f="full"]', r).value.trim()}))
+      .filter(r => r.short || r.full).map(r => ({...r, short:r.short || r.full.slice(0, 28), full:r.full || r.short}));
+    const kept = new Set(rows.map(r => r.key));
+    const used = usedReasonKeys();
+    const archived = st.reasons.filter(r => !kept.has(r.key) && used.has(r.key)).map(r => ({...r, archived:true}));
+    return {title:$('#sTitle').value.trim(), weeks:parseInt($('#sWeeks').value, 10), levels, reasons:[...rows, ...archived], notes:$('#sNotes').value, topics:readTopics()};
+  };
+  $('#sSave').addEventListener('click', () => { saveSettings(collect()); closeSheet(); toast('Settings saved'); });
+  $('#sExport').addEventListener('click', () => {
+    saveSettings(collect());
+    const data = {app:APP_ID, kind:'settings', version:1, savedAt:new Date().toISOString(), paths:{[SETTINGS_PATH]:S.settings}};
+    offerFile($('#sOut'), `${slug(S.settings.title)}_settings.json`, new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+  });
+  $('#sImport').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    let data = null;
+    try { data = JSON.parse(await f.text()); } catch {}
+    if (!isBoardFile(data) || !data.paths[SETTINGS_PATH]) { $('#sOut').innerHTML = `<p class="hint">${esc(f.name)} has no settings from this board.</p>`; return; }
+    saveSettings(data.paths[SETTINGS_PATH]);
+    closeSheet();
+    toast(`Settings loaded from ${f.name}`);
+  });
+}
+
+/* ================= header controls ================= */
+function setWeek(w) {
+  w = Math.max(1, Math.min(maxWeek(), w));
+  if (w === S.week) return;
+  flushAll();
+  S.week = w; lsSet(bkey('week'), String(w));
+  S.grades = new Map();
+  if (S.mode === 'db') subscribeGrades();
+  else hydrateLocalWeek();
+  disarm();
+  renderAll();
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t && t.matches && t.matches('input[data-csv]')) { const f = t.files && t.files[0]; t.value = ''; if (f) openRoster(f); }
+});
+$('#wkSel').addEventListener('change', e => setWeek(+e.target.value));
+$('#wkPrev').addEventListener('click', () => setWeek(S.week - 1));
+$('#wkNext').addEventListener('click', () => setWeek(S.week + 1));
+$('#wkTA').addEventListener('input', () => saveWeekMeta(700));
+$('#wkTopic').addEventListener('input', () => saveWeekMeta(700));
+$('#btnSettings').addEventListener('click', openSettings);
+$('#btnBoards').addEventListener('click', openBoards);
+$('#btnRoster').addEventListener('click', () => openRoster());
+$('#btnPhotos').addEventListener('click', openPhotos);
+$('#btnExport').addEventListener('click', openExport);
+$('#trayToggle').addEventListener('click', () => {
+  const r = $('#rubric'); const c = !r.classList.contains('collapsed');
+  r.classList.toggle('collapsed', c);
+  $('#trayToggle').setAttribute('aria-expanded', String(!c));
+  $('#trayToggle').setAttribute('aria-label', c ? 'Show markers' : 'Hide markers');
+  lsSet('pboard-tray', c ? '0' : '1');
+});
+function applySize(sz) {
+  $('#app').dataset.size = sz;
+  $$('.sizes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === sz)));
+  lsSet('pboard-size', sz);
+  S.lastStruct = ''; renderBoard();
+}
+$$('.sizes button').forEach(b => b.addEventListener('click', () => applySize(b.dataset.size)));
+
+/* tray height -> bottom padding on phones */
+function syncTray() {
+  const h = narrow() ? $('#rubric').getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--tray-h', h + 'px');
+}
+new ResizeObserver(syncTray).observe($('#rubric'));
+window.addEventListener('resize', syncTray);
+
+/* ================= data sources ================= */
+function overlayBusy(map, prefix, idOf) {
+  for (const p of busyPaths(prefix)) {
+    const id = idOf(p);
+    const local = Q.pending.has(p) ? Q.pending.get(p) : undefined;
+    if (local === DEL) map.delete(id);
+    else if (local !== undefined) map.set(id, clone(local));
+  }
+}
+function dbFail(e) {
+  console.warn('db', e);
+  const c = e && e.code;
+  if (c === 'revoked' || c === 'not_granted') setReadOnly();
+  if (c === 'unavailable') setTimeout(() => { if (S.mode === 'db') startDb(true); }, 3000 + Math.random() * 2000);
+}
+function startDb(restart) {
+  const db = S.db;
+  if (restart) { Object.values(S.unsub).forEach(u => { try { u(); } catch {} }); S.unsub = {}; }
+  S.unsub.layout = db.doc(PATH.layout).onSnapshot(snap => {
+    if (!busy(PATH.layout)) S.layout = snap.exists ? clone(snap.data()) : null;
+    S.ready.layout = true; scheduleRender();
+  }, dbFail);
+  S.unsub.students = db.collection('students').onSnapshot(qs => {
+    const m = new Map();
+    for (const d of qs.docs) m.set(d.id, clone(d.data()));
+    for (const p of busyPaths('students/')) {
+      const id = p.slice(9);
+      if (Q.pending.has(p)) { const v = Q.pending.get(p); if (v === DEL) m.delete(id); else m.set(id, clone(v)); }
+      else if (S.students.has(id)) m.set(id, S.students.get(id)); else m.delete(id);
+    }
+    S.students = m; S.ready.students = true; scheduleRender();
+  }, dbFail);
+  S.unsub.weeks = db.collection('weeks').onSnapshot(qs => {
+    const m = new Map();
+    for (const d of qs.docs) { const v = d.data(); if (v && v.week) m.set(+v.week, clone(v)); }
+    for (const p of busyPaths('weeks/')) { const w = +p.slice(7); if (S.weeks.has(w)) m.set(w, S.weeks.get(w)); }
+    const first = !S.ready.weeks;
+    S.weeks = m; S.ready.weeks = true;
+    if (first && !S.weekFromPref && m.size) { const max = Math.max(...m.keys()); if (max !== S.week) { setWeek(max); return; } }
+    renderWeekSelect();
+  }, dbFail);
+  subscribeGrades();
+}
+function subscribeGrades() {
+  if (S.unsub.grades) { try { S.unsub.grades(); } catch {} }
+  const w = S.week;
+  S.ready.grades = false;
+  S.unsub.grades = S.db.collection('grades').where('week', '==', w).onSnapshot(qs => {
+    if (w !== S.week) return;
+    const m = new Map();
+    for (const d of qs.docs) { const v = d.data(); if (v && v.sid) m.set(v.sid, clone(v)); }
+    for (const p of busyPaths(`grades/w${w}__`)) {
+      const sid = p.slice(`grades/w${w}__`.length);
+      if (S.grades.has(sid)) m.set(sid, S.grades.get(sid)); else m.delete(sid);
+    }
+    S.grades = m; S.ready.grades = true;
+    scheduleRender();
+    if (S.sheet && S.sheet.kind === 'student') refreshStudentState();
+  }, dbFail);
+}
+function hydrateLocal() {
+  S.settings = mergeSettings(LOCAL[SETTINGS_PATH]);
+  applySettings();
+  if (S.week > maxWeek()) S.week = maxWeek();
+  S.layout = LOCAL[PATH.layout] ? clone(LOCAL[PATH.layout]) : null;
+  S.students = new Map();
+  S.weeks = new Map();
+  for (const [p, v] of Object.entries(LOCAL)) {
+    if (p.startsWith('students/') && v) { S.students.set(p.slice(9), clone(v)); if (v.thumb && !S.thumbs.has(p.slice(9))) S.thumbs.set(p.slice(9), v.thumb); }
+    if (p.startsWith('weeks/') && v && v.week) S.weeks.set(+v.week, clone(v));
+  }
+  hydrateLocalWeek();
+}
+function hydrateLocalWeek() {
+  S.grades = new Map();
+  const pre = `grades/w${S.week}__`;
+  for (const [p, v] of Object.entries(LOCAL)) if (p.startsWith(pre) && v && v.sid) S.grades.set(v.sid, clone(v));
+}
+function startLocal() {
+  S.mode = 'local';
+  loadLocal();
+  hydrateLocal();
+  if (!S.weekFromPref && S.weeks.size) { S.week = Math.max(...S.weeks.keys()); hydrateLocalWeek(); }
+  renderAll();
+}
+
+/* ================= boot ================= */
+async function boot() {
+  const size = lsGet('pboard-size', 'm');
+  $('#app').dataset.size = size;
+  $$('.sizes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === size)));
+  if (lsGet('pboard-tray', '1') === '0') { $('#rubric').classList.add('collapsed'); $('#trayToggle').setAttribute('aria-expanded', 'false'); }
+  const boards = readBoards();
+  const cur = lsGet(CUR_KEY, '');
+  S.board = boards.some(b => b.id === cur) ? cur : boards[0].id;
+  const wp = parseInt(lsGet(bkey('week'), '0'), 10) || 0;
+  S.week = Math.min(52, Math.max(1, wp || 1)); S.weekFromPref = !!wp;
+  renderWeekSelect();
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
+    navigator.serviceWorker.register('sw.js').catch(e => console.warn('Offline support unavailable', e));
+  }
+  await thumbsLoad();
+  startLocal();
+  syncBoardTitle();
+}
+boot();
+})();
+</script>
+
+</body>
+</html>
