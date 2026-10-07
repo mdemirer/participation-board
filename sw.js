@@ -1,7 +1,7 @@
 /* Participation Board: offline support.
    Change VERSION whenever any app file changes, so installed copies update. */
 const PREFIX = 'pboard-';
-const VERSION = PREFIX + '2026-10-07-5';
+const VERSION = PREFIX + '2026-10-07-6';
 const ASSETS = [
   "./",
   "./index.html",

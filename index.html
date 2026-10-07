@@ -361,6 +361,9 @@ body.dragging, body.dragging *{cursor:grabbing !important;user-select:none;-webk
 .rrow[data-lvl="0"] select{background:var(--g0-soft);border-color:var(--g0-line)}
 @media (max-width:599px){.rrow{grid-template-columns:84px minmax(0,1fr) 44px}.rrow input[data-f="full"]{grid-column:1/-1;grid-row:2}}
 .ready{padding:12px 14px;border-radius:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.rmopts{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.leftlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.leftlist li{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
 .chk{display:flex;align-items:center;gap:10px;min-height:40px;font-size:14px}
 .chk input{width:20px;height:20px;accent-color:var(--accent)}
 .missing{margin:0;padding-left:18px;font-size:13px;max-height:180px;overflow:auto}
@@ -466,18 +469,21 @@ function buildRubricWorkbook(ExcelJS, input) {
   const weeks = [...input.weeks].sort((a, b) => a.num - b.num);
 
   if (input.summary && weeks.length) {
-    const hasId = input.tables.some(t => t.groups.some(g => g.students.some(s => s.studentId)));
+    const rows = input.summaryRows || input.tables.flatMap(t => t.groups.flatMap(g => g.students.map(x => ({...x, table:t.unassigned ? '' : t.id, group:g.id}))));
+    const hasId = rows.some(x => x.studentId);
+    const hasNote = rows.some(x => x.note);
     const C0 = hasId ? 4 : 3;
     const sm = wb.addWorksheet('Summary', { views: [{ state: 'frozen', xSplit: C0, ySplit: 2 }] });
     const nW = weeks.length;
     const idVal = v => (/^[1-9]\d{0,14}$/.test(String(v || '')) ? Number(v) : (v || null));
+    const GREY = 'FFE3E6EA';
     sm.getCell(1, 1).value = `${input.title}: points per week (2 = ${L[2].short}, 1 = ${L[1].short}, 0 = ${L[0].short})`;
     sm.getCell(1, 1).font = { bold: true, size: 12 };
-    const head = ['Table', 'Group', ...(hasId ? ['Student ID'] : []), 'Student Name', ...weeks.map(w => `W${w.num}${w.topic ? ' ' + w.topic : ''}`), 'Total', 'Max'];
+    const head = ['Table', 'Group', ...(hasId ? ['Student ID'] : []), 'Student Name', ...weeks.map(w => `W${w.num}${w.topic ? ' ' + w.topic : ''}`), 'Total', 'Max', ...(hasNote ? ['Note'] : [])];
     head.forEach((h, i) => {
       const c = sm.getCell(2, i + 1);
       c.value = h; c.font = { bold: true }; c.fill = FILL(HEAD); c.border = BORDER;
-      c.alignment = { wrapText: true, vertical: 'middle', horizontal: i >= C0 ? 'center' : 'left' };
+      c.alignment = { wrapText: true, vertical: 'middle', horizontal: i >= C0 && i < C0 + nW + 2 ? 'center' : 'left' };
     });
     sm.getRow(2).height = 32;
     sm.getColumn(1).width = 11; sm.getColumn(2).width = 7;
@@ -485,25 +491,36 @@ function buildRubricWorkbook(ExcelJS, input) {
     sm.getColumn(C0).width = 32;
     for (let i = 0; i < nW; i++) sm.getColumn(C0 + 1 + i).width = 9;
     sm.getColumn(C0 + 1 + nW).width = 8; sm.getColumn(C0 + 2 + nW).width = 8;
-    let r = 3;
-    for (const t of input.tables) for (const g of t.groups) for (const s of g.students) {
-      sm.getCell(r, 1).value = tableVal(t);
-      sm.getCell(r, 2).value = g.id || null;
-      if (hasId) sm.getCell(r, 3).value = idVal(s.studentId);
-      sm.getCell(r, C0).value = s.name;
+    if (hasNote) sm.getColumn(C0 + 3 + nW).width = 26;
+    const lastCol = C0 + 2 + nW + (hasNote ? 1 : 0);
+    let r = 3, anyOut = false;
+    for (const x of rows) {
+      sm.getCell(r, 1).value = tableVal({ id: x.table, unassigned: !x.table });
+      sm.getCell(r, 2).value = x.group || null;
+      if (hasId) sm.getCell(r, 3).value = idVal(x.studentId);
+      sm.getCell(r, C0).value = x.name;
+      let total = 0, act = 0;
       weeks.forEach((w, i) => {
         const c = sm.getCell(r, C0 + 1 + i);
-        const pts = gradeOf(w.grades[s.sid]);
-        c.value = pts; c.alignment = { horizontal: 'center' };
+        c.alignment = { horizontal: 'center' };
+        if (w.active && !w.active.has(x.sid)) { c.value = null; c.fill = FILL(GREY); anyOut = true; return; }
+        const pts = gradeOf(w.grades[x.sid]);
+        act++; total += pts;
+        c.value = pts;
         if (pts === 1) c.fill = FILL(Y_SOFT);
         if (pts === 0) c.fill = FILL(R_SOFT);
       });
       const first = sm.getCell(r, C0 + 1).address, last = sm.getCell(r, C0 + nW).address;
-      sm.getCell(r, C0 + 1 + nW).value = { formula: `SUM(${first}:${last})`, result: weeks.reduce((a, w) => a + gradeOf(w.grades[s.sid]), 0) };
+      sm.getCell(r, C0 + 1 + nW).value = { formula: `SUM(${first}:${last})`, result: total };
       sm.getCell(r, C0 + 1 + nW).font = { bold: true };
-      sm.getCell(r, C0 + 2 + nW).value = nW * 2;
-      for (let c = 1; c <= C0 + 2 + nW; c++) sm.getCell(r, c).border = BORDER;
+      sm.getCell(r, C0 + 2 + nW).value = act * 2;
+      if (hasNote) sm.getCell(r, C0 + 3 + nW).value = x.note || null;
+      for (let c = 1; c <= lastCol; c++) sm.getCell(r, c).border = BORDER;
       r++;
+    }
+    if (anyOut) {
+      sm.getCell(r + 1, 1).value = 'Grey cells: the student was not in the class that week (not counted in Total or Max).';
+      sm.getCell(r + 1, 1).font = { italic: true, color: { argb: 'FF586674' } };
     }
   }
 
@@ -542,7 +559,7 @@ function buildRubricWorkbook(ExcelJS, input) {
 
     let r = 8;
     const firstRow = r;
-    for (const t of input.tables) {
+    for (const t of (w.tables || input.tables)) {
       for (const g of t.groups) {
         if (!g.students.length) continue;
         for (const s of g.students) {
@@ -848,7 +865,94 @@ function setReadOnly() {
 }
 
 /* ================= data views ================= */
-function tablesView() {
+/* Each student may carry: from/until (first/last week in class) or, after a break, periods
+   ([[from, until|null], ...]), and hist ([[week, table, group], ...]: seat changes).
+   Without them a student is in every week at one seat. */
+const periodsOf = st => (Array.isArray(st.periods) && st.periods.length ? st.periods : [[st.from || 1, st.until ?? null]]);
+const activeIn = (st, w) => periodsOf(st).some(([a, b]) => a <= w && (b == null || w <= b));
+const firstWeek = st => periodsOf(st)[0][0];
+const hasLeft = st => { const ps = periodsOf(st); return ps[ps.length - 1][1] != null; };
+function withPeriods(st, ps) {
+  const next = {...st};
+  delete next.from; delete next.until; delete next.periods;
+  if (ps.length === 1) { if (ps[0][0] > 1) next.from = ps[0][0]; if (ps[0][1] != null) next.until = ps[0][1]; }
+  else next.periods = ps;
+  return next;
+}
+function leaveAfter(sid, lastWeek) {
+  const st = S.students.get(sid); if (!st) return;
+  const ps = periodsOf(st).map(x => [...x]).filter(([a]) => a <= lastWeek);
+  if (!ps.length) { deleteStudentCompletely(sid); return; }
+  const last = ps[ps.length - 1];
+  last[1] = last[1] == null ? lastWeek : Math.min(last[1], lastWeek);
+  putStudent(sid, withPeriods(st, ps));
+}
+function rejoinFrom(sid, W) {
+  const st = S.students.get(sid); if (!st || activeIn(st, W)) return;
+  const ps = periodsOf(st).map(x => [...x]);
+  const last = ps[ps.length - 1];
+  if (last[1] == null) return;
+  if (W <= last[1] + 1) last[1] = null; else ps.push([W, null]);
+  putStudent(sid, withPeriods(st, ps));
+}
+function membershipText(st) {
+  const ps = periodsOf(st);
+  if (ps.length === 1) {
+    return [ps[0][0] > 1 ? `Joined in week ${ps[0][0]}` : '', ps[0][1] != null ? `Left after week ${ps[0][1]}` : ''].filter(Boolean).join('; ');
+  }
+  return 'In class: weeks ' + ps.map(([a, b]) => (b == null ? `${a} on` : a === b ? `${a}` : `${a}–${b}`)).join(', ');
+}
+function seatAt(st, w) {
+  const h = st.hist;
+  if (!h || !h.length) return [String(st.table ?? '').trim(), String(st.group ?? '')];
+  let seat = null;
+  for (const [hw, t, g] of h) { if (hw <= w) seat = [t, g]; else break; }
+  return (seat || [h[0][1], h[0][2]]).map(String);
+}
+function setSeat(sid, t, g, W = S.week) {
+  const cur = S.students.get(sid); if (!cur) return;
+  t = String(t || ''); g = t ? String(g || '') : '';
+  const [ot, og] = seatAt(cur, W);
+  if (ot === t && og === g) return;
+  const start = firstWeek(cur);
+  let h = cur.hist ? cur.hist.map(x => [...x]) : [[start, String(cur.table || ''), String(cur.group || '')]];
+  const w = Math.max(W, start);
+  const i = h.findIndex(x => x[0] === w);
+  if (i >= 0) h[i] = [w, t, g]; else { h.push([w, t, g]); h.sort((a, b) => a[0] - b[0]); }
+  h = h.filter((x, k) => k === 0 || x[1] !== h[k - 1][1] || x[2] !== h[k - 1][2]);
+  const last = h[h.length - 1];
+  const next = {...cur, table:last[1], group:last[2], order:nextOrder(t, g)};
+  if (h.length > 1) next.hist = h; else delete next.hist;
+  putStudent(sid, next);
+}
+function hasDataBefore(W) {
+  for (const p of Object.keys(LOCAL)) { const m = p.match(/^(grades|weeks)\/w(\d+)/); if (m && +m[2] < W) return true; }
+  return false;
+}
+const startWeekForNew = () => (hasDataBefore(S.week) ? S.week : 1);
+function deleteStudentCompletely(sid) {
+  S.students.delete(sid);
+  persist(PATH.student(sid), DEL);
+  for (const p of Object.keys(LOCAL)) if (p.startsWith('grades/') && p.endsWith('__' + sid)) persist(p, DEL);
+  S.grades.delete(sid);
+  thumbDel(sid);
+}
+function retireStudent(sid, lastWeek) { leaveAfter(sid, lastWeek); }
+function exportTables(w) {
+  return tablesView(w).map(t => ({id:t.id, unassigned:!!t.unassigned, groups:t.groups.map(g => ({id:g.id, students:g.students.map(x => ({sid:x.sid, name:x.name, studentId:x.studentId || ''}))}))}));
+}
+function summaryRowsFor(weeks) {
+  const seen = new Map();
+  for (const w of weeks) for (const sid of w.active) seen.set(sid, Math.max(seen.get(sid) || 0, w.num));
+  const rows = [];
+  for (const [sid, lastW] of seen) {
+    const st = S.students.get(sid); if (!st) continue;
+    const [t, g] = activeIn(st, S.week) ? seatAt(st, S.week) : seatAt(st, lastW);
+    rows.push({sid, name:st.name, studentId:st.studentId || '', table:t, group:g, order:st.order, note:membershipText(st)});
+  }
+  return rows.sort((a, b) => (!a.table - !b.table) || natural(a.table, b.table) || natural(a.group, b.group) || ((a.order ?? 1e9) - (b.order ?? 1e9)) || natural(a.name, b.name));
+}
+function tablesView(w = S.week) {
   const tables = new Map();
   for (const t of (S.layout && S.layout.tables) || []) {
     const id = String(t.id);
@@ -856,9 +960,9 @@ function tablesView() {
   }
   const un = [];
   for (const [sid, st] of S.students) {
-    const tid = String(st.table ?? '').trim();
+    if (!activeIn(st, w)) continue;
+    const [tid, gid] = seatAt(st, w);
     if (!tid) { un.push({sid, ...st}); continue; }
-    const gid = String(st.group ?? '');
     if (!tables.has(tid)) tables.set(tid, {id:tid, groups:new Map()});
     const T = tables.get(tid);
     if (!T.groups.has(gid)) T.groups.set(gid, []);
@@ -1221,7 +1325,7 @@ function renderModeBar() {
 }
 function renderTally() {
   let c = [0, 0, 0];
-  for (const sid of S.students.keys()) c[gOf(sid)]++;
+  for (const [sid, st] of S.students) if (activeIn(st, S.week)) c[gOf(sid)]++;
   const html = S.students.size
     ? `<span class="pill p2" title="2 points"><i></i>${c[2]}</span><span class="pill p1" title="1 point"><i></i>${c[1]}</span><span class="pill p0" title="0 points"><i></i>${c[0]}</span>`
     : '';
@@ -1448,10 +1552,11 @@ function renameTable(oldId, newId) {
   const L = currentLayout();
   const a = L.tables.find(t => t.id === oldId);
   const b = L.tables.find(t => t.id === newId);
+  const relabel = t => (t === oldId ? newId : (b && t === newId ? oldId : t));
   for (const [sid, st] of [...S.students]) {
-    const t = String(st.table || '');
-    if (t === oldId) putStudent(sid, {...st, table:newId});
-    else if (b && t === newId) putStudent(sid, {...st, table:oldId});
+    const next = {...st, table:relabel(String(st.table || ''))};
+    if (st.hist) next.hist = st.hist.map(([w, t, g]) => [w, relabel(String(t)), g]);
+    if (JSON.stringify(next) !== JSON.stringify(st)) putStudent(sid, next);
   }
   if (a) a.id = newId;
   if (b) b.id = oldId;
@@ -1509,7 +1614,7 @@ function removeTable(tid) {
 }
 function nextOrder(tid, gid) {
   let m = -1;
-  for (const s of S.students.values()) if (String(s.table || '') === tid && String(s.group || '') === gid) m = Math.max(m, s.order ?? 0);
+  for (const s of S.students.values()) { if (!activeIn(s, S.week)) continue; const [t, g] = seatAt(s, S.week); if (t === tid && g === gid) m = Math.max(m, s.order ?? 0); }
   return m + 1;
 }
 function putStudent(sid, st, delay = 0) { S.students.set(sid, st); persist(PATH.student(sid), st, delay); }
@@ -1538,6 +1643,7 @@ function openStudent(sid) {
   const ro = !S.canWrite;
   const tables = currentLayout().tables;
   const LV = S.settings.levels;
+  const [seatT, seatG] = seatAt(st, S.week);
   const recReasons = (recOf(sid) || {}).reasons || [];
   const reasonsFor = lvl => S.settings.reasons.filter(r => r.lvl === lvl && (!r.archived || recReasons.includes(r.key)));
   const unknown = recReasons.filter(k => !KW[k]);
@@ -1552,9 +1658,9 @@ function openStudent(sid) {
       </div>
       <div class="sh-id">
         <label class="fv"><span>Name</span><input id="stName" value="${esc(st.name)}" autocomplete="off"${ro ? ' disabled' : ''}></label>
-        ${st.studentId ? `<span class="sid">ID ${esc(st.studentId)}</span>` : ''}
+        ${st.studentId || membershipText(st) ? `<span class="sid">${[st.studentId ? 'ID ' + esc(st.studentId) : '', esc(membershipText(st))].filter(Boolean).join(' · ')}</span>` : ''}
         <div class="seat">
-          <label class="fv"><span>Table</span><select id="stTable"${ro ? ' disabled' : ''}>${tables.map(t => `<option value="${esc(t.id)}"${t.id === String(st.table || '') ? ' selected' : ''}>Table ${esc(t.id)}</option>`).join('')}<option value=""${!st.table ? ' selected' : ''}>Unassigned</option></select></label>
+          <label class="fv"><span>Table</span><select id="stTable"${ro ? ' disabled' : ''}>${tables.map(t => `<option value="${esc(t.id)}"${t.id === seatT ? ' selected' : ''}>Table ${esc(t.id)}</option>`).join('')}<option value=""${!seatT ? ' selected' : ''}>Unassigned</option></select></label>
           <label class="fv"><span>Group</span><select id="stGroup"${ro ? ' disabled' : ''}></select></label>
         </div>
       </div>
@@ -1581,8 +1687,9 @@ function openStudent(sid) {
     const gsel = $('#stGroup');
     if (!tv) { gsel.innerHTML = '<option value="">—</option>'; gsel.disabled = true; return; }
     gsel.disabled = ro;
-    const gs = t && t.groups.length ? t.groups : [String(cur.group || '')];
-    gsel.innerHTML = gs.map(g => `<option value="${esc(g)}"${g === String(cur.group || '') ? ' selected' : ''}>${g ? 'Group ' + esc(g) : 'No group'}</option>`).join('');
+    const cg = seatAt(cur, S.week)[1];
+    const gs = t && t.groups.length ? t.groups : [cg];
+    gsel.innerHTML = gs.map(g => `<option value="${esc(g)}"${g === cg ? ' selected' : ''}>${g ? 'Group ' + esc(g) : 'No group'}</option>`).join('');
   };
   fillGroups();
   const rec = recOf(sid);
@@ -1600,9 +1707,9 @@ function openStudent(sid) {
   const moveSeat = () => {
     const cur = S.students.get(sid); if (!cur) return;
     const table = $('#stTable').value, group = table ? $('#stGroup').value : '';
-    if (String(cur.table || '') === table && String(cur.group || '') === group) return;
-    putStudent(sid, {...cur, table, group, order:nextOrder(table, group)});
+    setSeat(sid, table, group);
     renderAll();
+    if (S.week > firstWeek(cur)) toast(`Moved from week ${S.week} on. Earlier weeks keep the old seat.`);
   };
   $('#stTable').addEventListener('change', () => { fillGroups(); $('#stGroup').value = $('#stGroup').options[0] ? $('#stGroup').options[0].value : ''; moveSeat(); });
   $('#stGroup').addEventListener('change', moveSeat);
@@ -1644,9 +1751,21 @@ function openStudent(sid) {
   const bindDel = () => $('#stDel').addEventListener('click', () => {
     const w = $('#stDelWrap');
     const nm = (S.students.get(sid) || st).name;
-    w.innerHTML = `<div class="confirm">Remove ${esc(nm)} from the roster? <button class="btn small danger" type="button" id="stDelYes">Remove</button><button class="btn small" type="button" id="stDelNo">Keep</button></div>`;
+    const cur = S.students.get(sid) || st, W = S.week, start = firstWeek(cur);
+    w.innerHTML = `<div class="rmopts"><p><b>Remove ${esc(nm)}?</b> Leaving keeps their grades in earlier weeks and in Excel.</p>
+      <div class="btnrow">${W > start ? `<button class="btn small" type="button" data-left="${W - 1}">Left before week ${W}</button>` : ''}<button class="btn small" type="button" data-left="${W}">Left after week ${W}</button></div>
+      <div class="btnrow"><button class="btn small danger" type="button" id="stDelAll">Delete completely…</button><button class="btn small" type="button" id="stDelNo">Cancel</button></div></div>`;
     $('#stDelNo').addEventListener('click', () => { w.innerHTML = '<button class="btn danger" type="button" id="stDel">Remove student</button>'; bindDel(); });
-    $('#stDelYes').addEventListener('click', () => { deleteStudent(sid); closeSheet(); toast(`${nm} removed`); });
+    $$('[data-left]', w).forEach(b => b.addEventListener('click', () => {
+      const last = +b.dataset.left;
+      retireStudent(sid, last); closeSheet(); renderAll();
+      toast(last >= start ? `${nm} left after week ${last}. Earlier weeks are kept.` : `${nm} removed`);
+    }));
+    $('#stDelAll').addEventListener('click', () => {
+      w.innerHTML = `<div class="rmopts"><p>Delete ${esc(nm)} and <b>all their grades in every week</b>? Use this only for a student added by mistake.</p><div class="btnrow"><button class="btn small danger" type="button" id="stDelYes">Delete completely</button><button class="btn small" type="button" id="stDelNo2">Cancel</button></div></div>`;
+      $('#stDelNo2').addEventListener('click', () => { w.innerHTML = '<button class="btn danger" type="button" id="stDel">Remove student</button>'; bindDel(); });
+      $('#stDelYes').addEventListener('click', () => { deleteStudent(sid); closeSheet(); toast(`${nm} deleted`); });
+    });
   });
   bindDel();
 }
@@ -1666,11 +1785,7 @@ function refreshStudentState() {
   if (note && document.activeElement !== note) note.value = r ? r.note || '' : '';
 }
 function deleteStudent(sid) {
-  const st = S.students.get(sid);
-  S.students.delete(sid);
-  persist(PATH.student(sid), DEL);
-  if (S.grades.has(sid)) { S.grades.delete(sid); persist(PATH.grade(S.week, sid), DEL); }
-  thumbDel(sid);
+  deleteStudentCompletely(sid);
   renderAll();
 }
 
@@ -1690,7 +1805,9 @@ function openAdd(tid, gid) {
   const go = () => {
     const name = inp.value.trim(); if (!name) { inp.focus(); return; }
     const sid = newId();
-    putStudent(sid, {name, table:tid, group:gid, order:nextOrder(tid, gid)});
+    const stNew = {name, table:tid, group:gid, order:nextOrder(tid, gid)};
+    const fw = startWeekForNew(); if (fw > 1) stNew.from = fw;
+    putStudent(sid, stNew);
     const L = currentLayout();
     if (tid && !(S.layout && S.layout.tables.some(t => t.id === tid && t.groups.includes(gid)))) saveLayout(L);
     added.push(name);
@@ -1711,7 +1828,7 @@ function openRoster(csvFile) {
   let lastImp = null; try { lastImp = JSON.parse(lsGet(bkey('lastimport'), 'null')); } catch {}
   const sh = openSheet('roster', `
     <h2>Roster</h2>
-    <p class="hint">${n} student${n === 1 ? '' : 's'} at ${view.filter(t => !t.unassigned).length} table${view.filter(t => !t.unassigned).length === 1 ? '' : 's'}${view.some(t => t.unassigned && t.groups[0].students.length) ? `, ${view.find(t => t.unassigned).groups[0].students.length} unassigned` : ''}.</p>
+    <p class="hint">Week ${S.week}: ${view.reduce((a, t) => a + t.groups.reduce((b, g) => b + g.students.length, 0), 0)} students at ${view.filter(t => !t.unassigned).length} table${view.filter(t => !t.unassigned).length === 1 ? '' : 's'}${view.some(t => t.unassigned && t.groups[0].students.length) ? `, ${view.find(t => t.unassigned).groups[0].students.length} unassigned` : ''}.</p>
     <div>
       <h3>Class list (CSV)</h3>
       <p>One student per row: <code>ID, Name Surname, Table, Group, Photo</code>, for example <code>10001, Name Surname, 1, a, photos/10001.jpg</code>. A header row is optional, and commas or semicolons both work. Leave Table empty for students without a table; they go to Unassigned.</p>
@@ -1720,6 +1837,8 @@ function openRoster(csvFile) {
       ${lastImp ? `<p class="hint" style="margin-top:6px">Last import: ${esc(lastImp.file)}, ${lastImp.count} students, ${esc(new Date(lastImp.at).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'}))}</p>` : ''}
       <div id="rCsvPrev" style="margin-top:10px"></div>
     </div>
+    ${(() => { const left = [...S.students.entries()].filter(([, x]) => hasLeft(x) && !activeIn(x, S.week)).sort((a, b) => natural(a[1].name, b[1].name));
+      return left.length ? `<details class="more"><summary>${left.length} student${left.length === 1 ? '' : 's'} not in the class in week ${S.week}</summary><div><ul class="leftlist">${left.map(([id, x]) => `<li><span>${esc(x.name)} · ${esc(membershipText(x))}</span><button class="btn small" type="button" data-back="${esc(id)}">Bring back from week ${S.week}</button></li>`).join('')}</ul></div></details>` : ''; })()}
     <details class="more">
       <summary>Other ways to add or arrange students</summary>
       <div>
@@ -1742,6 +1861,10 @@ function openRoster(csvFile) {
     <div><h3>This week</h3><div id="rClearWrap"><button class="btn danger" type="button" id="rClear">Reset week ${S.week} to 2 pts for everyone</button></div></div>
     <div class="sh-foot"><span></span><button class="btn primary" type="button" data-close>Done</button></div>`);
   const sheetState = S.sheet;
+  $$('[data-back]').forEach(b => b.addEventListener('click', () => {
+    const x = S.students.get(b.dataset.back); if (!x) return;
+    rejoinFrom(b.dataset.back, S.week); closeSheet(); renderAll(); toast(`${x.name} is back from week ${S.week}`);
+  }));
 
   /* --- CSV --- */
   const showCsv = async f => {
@@ -1758,7 +1881,8 @@ function openRoster(csvFile) {
     const updated = targets.filter(t => t && S.students.has(t)).length;
     const migrating = entries.filter((e, i) => !S.students.has(targets[i]) && legacyMatch(e)).length;
     const added = entries.length - updated - migrating;
-    const notIn = [...S.students.keys()].filter(sid => !incoming.has(sid) && !entries.some(e => legacyMatch(e) === sid));
+    const notIn = [...S.students.entries()].filter(([sid, x]) => activeIn(x, S.week) && !incoming.has(sid) && !entries.some(e => legacyMatch(e) === sid)).map(([sid]) => sid);
+    const keepsHistory = hasDataBefore(S.week);
     const seated = autoSeat(entries, new Map());
     const tables = new Set(seated.map(e => e.table).filter(Boolean));
     const nUn = seated.filter(e => !e.table).length;
@@ -1769,7 +1893,10 @@ function openRoster(csvFile) {
       ${res.dupes.length ? `<p class="hint">Skipped repeated IDs: ${esc(res.dupes.slice(0, 5).join(', '))}${res.dupes.length > 5 ? '…' : ''}</p>` : ''}
       ${res.noId ? `<p class="hint">${res.noId} row${res.noId === 1 ? ' has' : 's have'} no ID and will be matched by name.</p>` : ''}
       ${n ? `<p>${updated ? `${updated} already on the board will be updated` : 'None are on the board yet'}${added ? `, ${added} ${added === 1 ? 'is' : 'are'} new` : ''}.${migrating ? ` ${migrating} existing student${migrating === 1 ? '' : 's'} without an ID will be linked to their ID, keeping their grades.` : ''}</p>` : ''}
-      ${notIn.length ? `<label class="chk"><input type="checkbox" id="rCsvRemove" checked> Remove the ${notIn.length} student${notIn.length === 1 ? '' : 's'} on the board who ${notIn.length === 1 ? "isn't" : "aren't"} in this file</label><p class="hint">Their grades stay saved and come back if they're imported again.</p>` : ''}
+      ${notIn.length ? (keepsHistory
+        ? `<label class="chk"><input type="checkbox" id="rCsvRemove" checked> Mark the ${notIn.length} student${notIn.length === 1 ? '' : 's'} who ${notIn.length === 1 ? "isn't" : "aren't"} in this file as left from week ${S.week}</label><p class="hint">Their grades in earlier weeks are kept.</p>`
+        : `<label class="chk"><input type="checkbox" id="rCsvRemove" checked> Remove the ${notIn.length} student${notIn.length === 1 ? '' : 's'} on the board who ${notIn.length === 1 ? "isn't" : "aren't"} in this file</label>`) : ''}
+      ${S.week > 1 && keepsHistory ? `<p class="hint">Seat changes in this file apply from week ${S.week} on; new students join from week ${S.week}.</p>` : ''}
       <div class="btnrow"><button class="btn primary" type="button" id="rCsvGo">Import ${entries.length} students</button></div></div>`;
     $('#rCsvGo').addEventListener('click', () => {
       const rm = $('#rCsvRemove');
@@ -1903,6 +2030,7 @@ function migrateSid(from, to) {
 function commitCsv(entries, removeMissing, fileName) {
   if (!S.canWrite || !entries.length) return;
   const seated = autoSeat(entries, new Map());
+  const W = S.week, fromNew = startWeekForNew();
   const keep = new Set();
   const counters = new Map();
   for (const e of seated) {
@@ -1917,13 +2045,22 @@ function commitCsv(entries, removeMissing, fileName) {
     keep.add(sid);
     const k = e.table + '|' + e.group;
     const o = counters.get(k) || 0; counters.set(k, o + 1);
-    const st = {...(cur || {}), name:e.name, table:String(e.table), group:String(e.group), order:o};
+    let st;
+    if (cur) {
+      st = {...cur, name:e.name};
+    } else {
+      st = {name:e.name, table:String(e.table), group:String(e.group)};
+      if (fromNew > 1) st.from = fromNew;
+    }
     delete st.ex;
     if (cleanId(e.id)) st.studentId = String(e.id).trim().replace(/\.0+$/, '');
     if (e.photo) st.photoPath = e.photo;
     putStudent(sid, st);
+    if (cur) { rejoinFrom(sid, W); setSeat(sid, String(e.table), String(e.group), W); }
+    const after = S.students.get(sid);
+    putStudent(sid, {...after, order:o});
   }
-  if (removeMissing) for (const sid of [...S.students.keys()]) if (!keep.has(sid)) { S.students.delete(sid); persist(PATH.student(sid), DEL); }
+  if (removeMissing) for (const [sid, x] of [...S.students]) if (!keep.has(sid) && activeIn(x, W)) retireStudent(sid, W - 1);
   const L = removeMissing ? {tables:[]} : currentLayout();
   for (const e of seated) {
     if (!e.table) continue;
@@ -1984,50 +2121,8 @@ async function readRosterXlsx(file) {
   return best;
 }
 function commitRoster(entries, replace) {
-  if (!S.canWrite || !entries.length) return;
-  const occupancy = new Map();
-  if (!replace) for (const s of S.students.values()) { const k = s.table + '|' + s.group; occupancy.set(k, (occupancy.get(k) || 0) + 1); }
-  const seated = autoSeat(entries, occupancy);
-  const photos = new Map();
-  if (replace) {
-    for (const [id, s] of S.students) photos.set(norm(s.name), {id, file:s.photoFile, thumb:s.thumb});
-    const sampleIds = [...S.students.entries()].filter(([, s]) => s.ex).map(([id]) => id);
-    for (const id of [...S.students.keys()]) persist(PATH.student(id), DEL);
-    S.students = new Map();
-    if (sampleIds.length) deleteGradesFor(new Set(sampleIds));
-  }
-  const counters = new Map();
-  for (const e of seated) {
-    const k = e.table + '|' + e.group;
-    const base = replace ? 0 : nextOrder(e.table, e.group);
-    const o = (counters.get(k) ?? base);
-    counters.set(k, o + 1);
-    const st = {name:e.name, table:String(e.table), group:String(e.group), order:o};
-    const sidNew = newId();
-    const p = photos.get(norm(e.name));
-    if (p && !p.used) {
-      p.used = true;
-      if (p.file) st.photoFile = p.file;
-      if (p.thumb) st.thumb = p.thumb;
-      if (S.thumbs.has(p.id) && !p.thumb) thumbMove(p.id, sidNew);
-      else if (p.thumb) setThumbURL(sidNew, p.thumb);
-    }
-    putStudent(sidNew, st);
-  }
-  for (const p of photos.values()) if (!p.used && S.thumbs.has(p.id)) thumbDel(p.id);
-  const L = replace ? {tables:[]} : currentLayout();
-  for (const e of seated) {
-    if (!e.table) continue;
-    let t = L.tables.find(x => x.id === String(e.table));
-    if (!t) { t = {id:String(e.table), groups:[]}; L.tables.push(t); }
-    if (!t.groups.includes(String(e.group))) t.groups.push(String(e.group));
-  }
-  L.tables.sort((a, b) => natural(a.id, b.id));
-  L.tables.forEach(t => t.groups.sort(natural));
-  saveLayout(L);
-  S.editing = false;
-  renderAll();
-  toast(`${seated.length} students ${replace ? 'imported' : 'added'}`);
+  // Pasted or Excel lists have no IDs: students are matched by name, like a class list without IDs.
+  commitCsv(entries.map(e => ({id:'', name:e.name, table:e.table || '', group:e.group || '', photo:''})), replace, 'the list');
 }
 async function deleteGradesFor(sids) {
   for (const sid of [...S.grades.keys()]) if (sids.has(sid)) { S.grades.delete(sid); persist(PATH.grade(S.week, sid), DEL); }
@@ -2272,9 +2367,14 @@ function openExport() {
     try {
       const ExcelJS = await loadExcelJS();
       const weeks = await gatherWeeks(all);
-      const tables = tablesView().map(t => ({id:t.id, unassigned:!!t.unassigned, groups:t.groups.map(g => ({id:g.id, students:g.students.map(s => ({sid:s.sid, name:s.name, studentId:s.studentId || ''}))}))}));
+      for (const w of weeks) {
+        w.tables = exportTables(w.num);
+        w.active = new Set(w.tables.flatMap(t => t.groups.flatMap(g => g.students.map(x => x.sid))));
+      }
+      const tables = exportTables(S.week);
+      const summaryRows = all ? summaryRowsFor(weeks) : null;
       const st = S.settings;
-      const wb = buildRubricWorkbook(ExcelJS, {title:st.title, levels:st.levels, notes:st.notes, keywords:st.reasons.map(r => ({key:r.key, lvl:r.lvl, full:r.full, archived:!!r.archived})), tables, weeks, summary:all});
+      const wb = buildRubricWorkbook(ExcelJS, {title:st.title, levels:st.levels, notes:st.notes, keywords:st.reasons.map(r => ({key:r.key, lvl:r.lvl, full:r.full, archived:!!r.archived})), tables, weeks, summary:all, summaryRows});
       const buf = await wb.xlsx.writeBuffer();
       const filename = all ? `${slug(S.settings.title)}_All_Weeks.xlsx` : `${slug(S.settings.title)}_Week${S.week}.xlsx`;
       if (!$('#xOut')) return;
